@@ -363,10 +363,10 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
   </section>
   <section id="view-customers" class="view">
     <div class="page-header"><div><h1 data-i18n="cust_title">客户档案</h1><div class="sub" data-i18n="cust_sub">在莫中国老板 + 个人客户</div></div><div><button class="btn primary" onclick="openCustomerModal()" data-i18n="btn_new_cust">+ 新建客户</button></div></div>
-    <div class="toolbar"><input id="cust-search" data-i18n-placeholder="ph_search_cust" placeholder="按公司/姓名/微信搜索" style="flex:1;max-width:300px;" /></div>
+    <div class="toolbar"><input id="cust-search" data-i18n-placeholder="ph_search_cust" placeholder="按公司名搜索" style="flex:1;max-width:300px;" /></div>
     <div class="card" style="padding:0;">
       <table class="tbl" id="customer-table">
-        <thead><tr><th data-i18n="th_name">公司/姓名</th><th data-i18n="th_type">类型</th><th data-i18n="th_biz">主营</th><th class="center" data-i18n="th_terms">付款条款</th><th class="center" data-i18n="th_credit">信用分</th><th class="center" data-i18n="th_cnt">提单</th><th class="num" data-i18n="th_debt">欠款</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <thead><tr><th data-i18n="th_name">公司名</th><th data-i18n="th_biz">主营</th><th class="center" data-i18n="th_terms">付款条款</th><th class="center" data-i18n="th_cnt">提单</th><th class="num" data-i18n="th_debt">欠款</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -559,8 +559,8 @@ const I18N={
     th_trip:"客户单据",th_tripdate:"交付日期",
     trip_title:"客户清关单（Triplicado）",trip_status_pending:"⏳ 待交客户",trip_status_done:"✅ 已交付",trip_mark_btn:"标记为已交付",trip_undo_btn:"撤销交付",trip_delivered_at:"交付时间",trip_note:"备注（如：现场交/微信发/客户代领）",trip_pending_hint:"清关单第三联（Triplicado）尚未交给客户 · 客户在 BEIRA 港提货必须出示此单",
     th_bl:"提单号",th_customer:"客户",th_product:"商品",th_cnt:"柜数",th_status:"状态",th_eta:"ETA",th_portdays:"在港",th_recv:"应收",th_paid:"实收",th_margin:"毛利",th_act:"操作",
-    th_node:"节点",th_amt:"金额",th_due:"到期",th_name:"公司/姓名",th_type:"类型",th_biz:"主营",th_terms:"付款条款",th_credit:"信用分",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
-    cust_title:"客户档案",cust_sub:"在莫中国老板 + 个人客户",ph_search_cust:"按公司/姓名/微信搜索",
+    th_node:"节点",th_amt:"金额",th_due:"到期",th_name:"公司名",th_biz:"主营",th_terms:"付款条款",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
+    cust_title:"客户档案",cust_sub:"在莫中国老板 + 个人客户",ph_search_cust:"按公司名搜索",
     ship_title:"提单档案",ship_sub:"每个提单 = 一票货 · 包含若干柜",ph_search_ship:"按提单号/商品/HS/柜号搜索",
     cont_title:"柜档案",cont_sub:"所有集装箱柜",ph_search_cont:"按柜号/提单号/商品搜索",
     detail_base:"提单基本信息",detail_summary:"本票汇总",detail_containers:"本票包含的柜子",
@@ -636,8 +636,8 @@ const I18N={
     th_trip:"Doc cliente",th_tripdate:"Entregue em",
     trip_title:"DU de Cliente (Triplicado)",trip_status_pending:"⏳ Pendente",trip_status_done:"✅ Entregue",trip_mark_btn:"Marcar como entregue",trip_undo_btn:"Desfazer",trip_delivered_at:"Data entrega",trip_note:"Obs (ex: entrega no local / WeChat / retirado pelo cliente)",trip_pending_hint:"O triplicado da DU ainda não foi entregue ao cliente · Necessário para levantar contentores no porto da Beira",
     th_bl:"BL",th_customer:"Cliente",th_product:"Produto",th_cnt:"Qtd",th_status:"Estado",th_eta:"ETA",th_portdays:"Porto",th_recv:"A receber",th_paid:"Recebido",th_margin:"Margem",th_act:"Acção",
-    th_node:"Nó",th_amt:"Valor",th_due:"Vencimento",th_name:"Nome/Empresa",th_type:"Tipo",th_biz:"Negócio",th_terms:"Termos",th_credit:"Crédito",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
-    cust_title:"Clientes",cust_sub:"Patrões chineses em Moçambique + clientes individuais",ph_search_cust:"Pesquisar empresa/nome",
+    th_node:"Nó",th_amt:"Valor",th_due:"Vencimento",th_name:"Nome",th_biz:"Negócio",th_terms:"Termos",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
+    cust_title:"Clientes",cust_sub:"Patrões chineses em Moçambique + clientes individuais",ph_search_cust:"Pesquisar nome",
     ship_title:"BLs",ship_sub:"Cada BL = uma carga · vários contentores",ph_search_ship:"Pesquisar BL/produto/HS/contentor",
     cont_title:"Contentores",cont_sub:"Todos os contentores",ph_search_cont:"Pesquisar contentor/BL",
     detail_base:"Info do BL",detail_summary:"Resumo",detail_containers:"Contentores deste BL",
@@ -981,12 +981,12 @@ function loadDemoData(){
   if(!isAdmin()){alert(t('admin_only_denied'));return;}
   if(!confirm('清空现有数据并加载演示数据？'))return;
   const customers=[
-    {id:'c1',name:'齐总',namePt:'Qi (CHICUMBANE Investimento)',type:'chinese_boss',wechat:'qi-chicumbane',phone:'+258 84 111 2222',address:'CHICUMBANE 投资区',business:'建材/投资',paymentTerms:{type:'credit',creditDays:30},creditScore:90,overdueCount:0,notes:'原表 CHICUMBANE INVESTIMENTOS, LDA',createdAt:'2025-01-10'},
-    {id:'c2',name:'老张',namePt:'Zhang (FLEXIVEL Plástico)',type:'chinese_boss',wechat:'zhang-plastico',phone:'+258 84 222 3333',address:'贝拉工业园',business:'塑料颗粒（免税）',paymentTerms:{type:'split',prepayPct:50},creditScore:85,overdueCount:0,notes:'原表 FLEXIVEL PLASTICA,LDA, 免税票',createdAt:'2025-03-15'},
-    {id:'c3',name:'索总',namePt:'Sol (Supermercado SOL)',type:'chinese_boss',wechat:'sol-supermarket',phone:'+258 84 333 4444',address:'贝拉中心区',business:'超市日用品',paymentTerms:{type:'prepay'},creditScore:98,overdueCount:0,notes:'原表 SUPERMERCADO SOL, LIMITADA',createdAt:'2025-02-20'},
-    {id:'c4',name:'吴总',namePt:'Wu (NEWSPEED Trading)',type:'chinese_boss',wechat:'newspeed-trade',phone:'+258 84 444 5555',address:'贝拉新城',business:'电子产品',paymentTerms:{type:'split',prepayPct:50},creditScore:88,overdueCount:0,notes:'原表 NEWSPEED INTERNATIONAL LIMITED',createdAt:'2025-04-05'},
-    {id:'c5',name:'林总',namePt:'Lin (Supermercado FELIZ BEIRA)',type:'chinese_boss',wechat:'feliz-beira',phone:'+258 84 555 6666',address:'贝拉 BEIRA 商业区',business:'超市百货',paymentTerms:{type:'credit',creditDays:30},creditScore:70,overdueCount:2,notes:'原表 SUPERMERCADO FELIZ SHOPPING/BEIRA',createdAt:'2025-05-12'},
-    {id:'c6',name:'米总',namePt:'Mi (Supermercado MIL)',type:'chinese_boss',wechat:'mil-supermarket',phone:'+258 84 666 7777',address:'贝拉 MIL 区',business:'超市小家电',paymentTerms:{type:'prepay'},creditScore:92,overdueCount:0,notes:'原表 SUPERMERCADO MIL, LIMITADA',createdAt:'2025-06-18'}
+    {id:'c1',name:'CHICUMBANE 投资有限公司',namePt:'CHICUMBANE INVESTIMENTOS, LDA',wechat:'qi-chicumbane',phone:'+258 84 111 2222',address:'CHICUMBANE 投资区',business:'建材/投资',paymentTerms:{type:'credit',creditDays:30},overdueCount:0,notes:'原表 CHICUMBANE INVESTIMENTOS, LDA',createdAt:'2025-01-10'},
+    {id:'c2',name:'贝拉塑料厂',namePt:'FLEXIVEL PLASTICA, LDA',wechat:'zhang-plastico',phone:'+258 84 222 3333',address:'贝拉工业园',business:'塑料颗粒（免税）',paymentTerms:{type:'split',prepayPct:50},overdueCount:0,notes:'原表 FLEXIVEL PLASTICA,LDA, 免税票',createdAt:'2025-03-15'},
+    {id:'c3',name:'SOL 超市',namePt:'SUPERMERCADO SOL, LIMITADA',wechat:'sol-supermarket',phone:'+258 84 333 4444',address:'贝拉中心区',business:'超市日用品',paymentTerms:{type:'prepay'},overdueCount:0,notes:'原表 SUPERMERCADO SOL, LIMITADA',createdAt:'2025-02-20'},
+    {id:'c4',name:'NEWSPEED 贸易',namePt:'NEWSPEED INTERNATIONAL LIMITED',wechat:'newspeed-trade',phone:'+258 84 444 5555',address:'贝拉新城',business:'电子产品',paymentTerms:{type:'split',prepayPct:50},overdueCount:0,notes:'原表 NEWSPEED INTERNATIONAL LIMITED',createdAt:'2025-04-05'},
+    {id:'c5',name:'FELIZ 超市',namePt:'SUPERMERCADO FELIZ SHOPPING/BEIRA',wechat:'feliz-beira',phone:'+258 84 555 6666',address:'贝拉 BEIRA 商业区',business:'超市百货',paymentTerms:{type:'credit',creditDays:30},overdueCount:2,notes:'原表 SUPERMERCADO FELIZ SHOPPING/BEIRA',createdAt:'2025-05-12'},
+    {id:'c6',name:'MIL 超市',namePt:'SUPERMERCADO MIL, LIMITADA',wechat:'mil-supermarket',phone:'+258 84 666 7777',address:'贝拉 MIL 区',business:'超市小家电',paymentTerms:{type:'prepay'},overdueCount:0,notes:'原表 SUPERMERCADO MIL, LIMITADA',createdAt:'2025-06-18'}
   ];
   const shipments=[];
 
@@ -1353,15 +1353,13 @@ function renderCustomers(){
     const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
     return `<tr onclick="if(!event.target.closest('button')){currentCustomerId='${c.id}';navigate('customer-detail')}">
       <td><strong style="color:var(--primary-dark);cursor:pointer;">${c.name}</strong><span class="pt-tag">${c.namePt||''}</span></td>
-      <td>${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')}</td>
       <td><span class="muted" style="font-size:11.5px;">${c.business||''}</span></td>
       <td class="center">${termsLabel}</td>
-      <td class="center"><span class="${c.creditScore<80?'red':''}">${c.creditScore}</span></td>
       <td class="center">${cnt}</td>
       <td class="num ${debt>0?'red':'muted'}">${canSeeIncome()?fmtMoney(debt):mask(debt)}</td>
       <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();openCustomerModal('${c.id}')">编辑</button> <button class="btn sm danger" onclick="event.stopPropagation();deleteCustomer('${c.id}')">删</button></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="8" class="empty">${t('empty_customers')}</td></tr>`;
+  }).join('')||`<tr><td colspan="6" class="empty">${t('empty_customers')}</td></tr>`;
 }
 
 // 客户详情（v3.0.11）
@@ -1377,11 +1375,10 @@ function renderCustomerDetail(){
   },0);
   const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
   document.getElementById('custd-title').textContent=c.name||'';
-  document.getElementById('custd-sub').textContent=`${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')} · ${c.business||'-'}`;
+  document.getElementById('custd-sub').textContent=`${c.business||'-'}`;
   document.getElementById('custd-edit-btn').onclick=()=>openCustomerModal(c.id);
   document.getElementById('custd-base').innerHTML=`
     <div class="detail-row"><div class="k">${t('th_name')}</div><div class="v">${c.name||'-'} <span class="pt-tag">${c.namePt||''}</span></div></div>
-    <div class="detail-row"><div class="k">${t('th_type')}</div><div class="v">${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')}</div></div>
     <div class="detail-row"><div class="k">${t('th_biz')}</div><div class="v">${c.business||'-'}</div></div>
     <div class="detail-row"><div class="k">${t('th_terms')}</div><div class="v">${termsLabel}</div></div>
     <div class="detail-row"><div class="k">微信</div><div class="v">${c.wechat||'-'}</div></div>
@@ -1391,7 +1388,7 @@ function renderCustomerDetail(){
   `;
   document.getElementById('custd-summary').innerHTML=`
     <div class="detail-row"><div class="k">${t('th_cnt')} / ${t('cnt')}</div><div class="v">${ships.length} 提单 / ${conts.length} 柜</div></div>
-    <div class="detail-row"><div class="k">${t('th_credit')}</div><div class="v"><span class="${c.creditScore<80?'red':''}">${c.creditScore||0}</span> · 历史拖欠 ${c.overdueCount||0} 次</div></div>
+    <div class="detail-row"><div class="k">历史拖欠</div><div class="v">${c.overdueCount||0} 次</div></div>
     <div class="detail-row"><div class="k">${t('th_debt')}</div><div class="v ${debt>0?'red':''}">${canSeeIncome()?fmtMoney(debt):mask(debt)}</div></div>
     <div class="detail-row"><div class="k">累计实收</div><div class="v green">${canSeeIncome()?fmtMoney(revenue):mask(revenue)}</div></div>
     <div class="detail-row"><div class="k">${t('deposit_filter_pending')}</div><div class="v ${depPending>0?'warning':''}">${depPending} 个柜</div></div>
@@ -2133,20 +2130,18 @@ function openCustomerModal(id){
   const c=id?data.customers.find(x=>x.id===id):null;
   const html=`
     <h3>${id?'编辑':'新建'}客户<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
-    <div class="form-row"><div><label>中文名 *<span class="pt">Nome chinês</span></label><input id="cm-name" value="${c?.name||''}" /></div>
-      <div><label>葡语公司名<span class="pt">Nome PT</span></label><input id="cm-namept" value="${c?.namePt||''}" /></div></div>
-    <div class="form-row"><div><label>类型</label><select id="cm-type"><option value="chinese_boss" ${c?.type==='chinese_boss'?'selected':''}>${t('ct_boss')}</option><option value="individual" ${c?.type==='individual'?'selected':''}>${t('ct_individual')}</option></select></div>
-      <div><label>主营</label><input id="cm-biz" value="${c?.business||''}" /></div></div>
-    <div class="form-row"><div><label>微信</label><input id="cm-wx" value="${c?.wechat||''}" /></div>
-      <div><label>电话</label><input id="cm-phone" value="${c?.phone||''}" /></div></div>
-    <div class="form-row"><div><label>付款条款</label><select id="cm-terms">
+    <div class="form-row"><div><label>公司名（中文）*<span class="pt">Nome (PT)</span></label><input id="cm-name" placeholder="如：AAA 贸易有限公司" value="${c?.name||''}" /></div>
+      <div><label>公司名（葡语）<span class="pt">Nome PT</span></label><input id="cm-namept" value="${c?.namePt||''}" /></div></div>
+    <div class="form-row"><div><label>主营</label><input id="cm-biz" value="${c?.business||''}" /></div>
+      <div><label>微信</label><input id="cm-wx" value="${c?.wechat||''}" /></div></div>
+    <div class="form-row"><div><label>电话</label><input id="cm-phone" value="${c?.phone||''}" /></div>
+      <div><label>付款条款</label><select id="cm-terms">
       <option value="prepay" ${c?.paymentTerms?.type==='prepay'?'selected':''}>${t('pt_prepay')}</option>
       <option value="split50" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===50?'selected':''}>${t('pt_split_50')}</option>
       <option value="split30" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===30?'selected':''}>${t('pt_split_30')}</option>
       <option value="credit30" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===30?'selected':''}>${t('pt_credit_30')}</option>
       <option value="credit60" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===60?'selected':''}>${t('pt_credit_60')}</option>
-    </select></div>
-      <div><label>信用分</label><input id="cm-credit" type="number" value="${c?.creditScore||80}" /></div></div>
+    </select></div></div>
     <div class="form-row single"><div><label>备注</label><textarea id="cm-notes" rows="2">${c?.notes||''}</textarea></div></div>
     <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveCustomer('${id||''}')">${t('btn_save')}</button></div>
   `;
@@ -2159,11 +2154,9 @@ function saveCustomer(id){
   const termsMap={prepay:{type:'prepay'},split50:{type:'split',prepayPct:50},split30:{type:'split',prepayPct:30},credit30:{type:'credit',creditDays:30},credit60:{type:'credit',creditDays:60}};
   const obj={
     name,namePt:document.getElementById('cm-namept').value,
-    type:document.getElementById('cm-type').value,
     business:document.getElementById('cm-biz').value,
     wechat:document.getElementById('cm-wx').value,phone:document.getElementById('cm-phone').value,
     paymentTerms:termsMap[termsVal],
-    creditScore:Number(document.getElementById('cm-credit').value||80),
     notes:document.getElementById('cm-notes').value
   };
   if(id){
