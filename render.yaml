@@ -13,7 +13,10 @@ services:
       - key: SECRET
         generateValue: true
       - key: R2_ENDPOINT
+        value: https://316fbcf7c4d84af09688e37dfac05fa4.r2.cloudflarestorage.com
       - key: R2_ACCESS_KEY_ID
+        value: 8231a172fda5a6b8c69b2fb3edcce170
       - key: R2_SECRET_ACCESS_KEY
+        value: 9b8909e4665a5f354a0065bab4e42175d0106c9d2f2f51bf2c41f5832fddbadd
       - key: R2_BUCKET
         value: beira-store
