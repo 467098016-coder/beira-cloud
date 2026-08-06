@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beira 集装箱柜清关 · v3.0 完整版</title>
+<style>
+:root{
+  --primary:#1f7a8c;--primary-dark:#155a68;--primary-light:#e7f1f4;
+  --bg:#f6f8fa;--card:#fff;--border:#e4e9ed;--text:#1a1f24;--text-muted:#6b7785;
+  --success:#2e8b57;--warning:#d97706;--danger:#c0392b;--info:#2563eb;
+  --shadow:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.55;font-size:14px}
+header{height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:100;gap:14px}
+header .logo{font-weight:700;font-size:15px;color:var(--primary-dark);display:flex;align-items:center;gap:8px}
+header .logo .badge{background:var(--primary);color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:500}
+header .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+header .clock{font-size:12.5px;color:var(--text-muted)}
+header .lang-switch{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:3px}
+header .lang-switch button{background:transparent;border:0;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:12.5px;color:var(--text-muted);font-family:inherit}
+header .lang-switch button.active{background:#fff;color:var(--primary-dark);box-shadow:0 1px 2px rgba(0,0,0,.06);font-weight:600}
+header .user-menu{display:flex;align-items:center;gap:8px;padding:5px 12px;background:var(--bg);border-radius:6px;font-size:13px;cursor:pointer;position:relative}
+header .user-menu .role-badge{padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:600}
+header .user-menu .role-badge.admin{background:var(--primary);color:#fff}
+header .user-menu .role-badge.worker{background:var(--warning);color:#fff}
+header .user-menu .dropdown{position:absolute;top:100%;right:0;margin-top:6px;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);min-width:140px;display:none;z-index:200}
+header .user-menu.open .dropdown{display:block}
+header .user-menu .dropdown div{padding:10px 14px;cursor:pointer;font-size:13px}
+header .user-menu .dropdown div:hover{background:var(--bg)}
+.layout{display:flex;min-height:calc(100vh - 56px)}
+nav.sidebar{width:170px;background:#fff;border-right:1px solid var(--border);padding:16px 10px;flex-shrink:0}
+nav.sidebar .nav-item{padding:10px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:2px;font-size:13.5px;transition:background .15s}
+nav.sidebar .nav-item:hover{background:var(--bg)}
+nav.sidebar .nav-item.active{background:var(--primary-light);color:var(--primary-dark);font-weight:600}
+nav.sidebar .nav-item .count{margin-left:auto;background:var(--bg);color:var(--text-muted);padding:1px 7px;border-radius:10px;font-size:11px}
+nav.sidebar .nav-item.active .count{background:var(--primary);color:#fff}
+nav.sidebar .nav-item.has-issue .count{background:var(--danger);color:#fff}
+nav.sidebar .nav-icon{font-size:16px}
+main.content{flex:1;padding:22px 26px;overflow-x:hidden;min-width:0}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.page-header h1{font-size:21px;font-weight:600}
+.page-header .sub{font-size:12.5px;color:var(--text-muted);margin-top:3px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:var(--primary-dark)}
+.btn.danger{color:var(--danger);border-color:var(--danger);background:#fff}
+.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text-muted)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.warn{background:var(--warning);color:#fff;border-color:var(--warning)}
+.btn.warn:hover{background:#b45309}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h2{font-size:15.5px;font-weight:600;margin-bottom:12px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.kpi.warn{border-left-color:var(--warning)}
+.kpi.danger{border-left-color:var(--danger)}
+.kpi.success{border-left-color:var(--success)}
+.kpi.warning-soft{border-left-color:#f59e0b;background:linear-gradient(90deg,#fffbeb 0%,#fff 30%)}
+.kpi .label{color:var(--text-muted);font-size:12px;margin-bottom:5px}
+.kpi .value{font-size:24px;font-weight:700;line-height:1.2}
+.kpi.warn .value{color:var(--warning)}
+.kpi.danger .value{color:var(--danger)}
+.kpi.success .value{color:var(--success)}
+.kpi.warning-soft .value{color:#f59e0b}
+.kpi.info{border-left-color:#06b6d4;background:linear-gradient(90deg,#ecfeff 0%,#fff 30%)}
+.kpi.info .value{color:#0891b2}
+.kpi .sub{font-size:11.5px;margin-top:3px;color:var(--text-muted)}
+.admin-only{display:none}
+body.role-admin .admin-only{display:block}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl th{text-align:left;padding:9px 12px;background:var(--bg);color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+table.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.tbl tr:hover td{background:var(--bg)}
+table.tbl tr.overdue td{background:#fff8e1}
+table.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+table.tbl .center{text-align:center}
+table.tbl .nowrap{white-space:nowrap}
+table.tbl .red{color:var(--danger);font-weight:600}
+table.tbl .green{color:var(--success);font-weight:600}
+table.tbl .muted{color:var(--text-muted)}
+table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-top:1px}
+.chip{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11px;font-weight:500;white-space:nowrap}
+.chip.s-info{background:#dbeafe;color:#1e40af}
+.chip.s-success{background:#d4edda;color:#155724}
+.chip.s-warning{background:#fff3cd;color:#856404}
+.chip.s-danger{background:#f8d7da;color:#721c24}
+.chip.s-neutral{background:#e9ecef;color:#495057}
+.detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.detail-row{display:flex;gap:8px;padding:4px 0;font-size:13px;align-items:flex-start}
+.detail-row .k{color:var(--text-muted);width:88px;flex-shrink:0;font-size:12.5px}
+.detail-row .v{flex:1}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px;gap:2px;overflow-x:auto}
+.tabs .tab{padding:9px 14px;cursor:pointer;color:var(--text-muted);font-size:13.5px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs .tab.active{color:var(--primary-dark);border-color:var(--primary);font-weight:600}
+.timeline{padding:6px 0}
+.tl-item{display:flex;gap:14px;padding:9px 0;position:relative}
+.tl-item::before{content:"";position:absolute;left:11px;top:30px;bottom:-9px;width:2px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:24px;height:24px;border-radius:50%;background:var(--bg);border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted)}
+.tl-item.done .tl-dot{background:var(--success);border-color:var(--success);color:#fff}
+.tl-item.progress .tl-dot{background:var(--info);border-color:var(--info);color:#fff}
+.tl-item.warn .tl-dot{background:var(--warning);border-color:var(--warning);color:#fff}
+.tl-item.over .tl-dot{background:var(--danger);border-color:var(--danger);color:#fff}
+.tl-content{flex:1;padding-top:1px}
+.tl-content .title{font-weight:500;font-size:13.5px}
+.tl-content .title small{font-weight:400;color:var(--text-muted);margin-left:6px}
+.tl-content .meta{font-size:11.5px;color:var(--text-muted);margin-top:2px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:11px}
+.form-row.single{grid-template-columns:1fr}
+.form-row.col3{grid-template-columns:1fr 1fr 1fr}
+.form-row label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:3px;font-weight:500}
+.form-row label .pt{display:block;font-size:10.5px;color:var(--text-muted);font-weight:400;margin-top:1px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:inherit;outline:none}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.form-section{background:var(--bg);padding:9px 13px;border-radius:6px;margin-bottom:12px;font-size:12.5px;color:var(--text-muted)}
+.form-section strong{color:var(--primary-dark)}
+.modal-back{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-back.show{display:flex}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;padding:22px 24px}
+.modal h3{font-size:16px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal .actions{margin-top:16px;display:flex;justify-content:flex-end;gap:8px}
+.ps-node{display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:1px solid var(--border);background:#fff}
+.ps-node:last-child{border-bottom:none}
+.ps-node .name{flex:1}
+.ps-node .name small{color:var(--text-muted);margin-left:4px;font-size:11px}
+.ps-node.overdue{background:#fff8e1}
+.ps-node.paid{opacity:.7}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:13px;flex-wrap:wrap}
+.toolbar input,.toolbar select{padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;outline:none}
+.empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.view{display:none}
+.view.active{display:block}
+.port-days{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:600}
+.port-days.normal{background:#d4edda;color:#155724}
+.port-days.warn{background:#fff3cd;color:#856404}
+.port-days.over{background:#f8d7da;color:#721c24}
+.port-days.critical{background:var(--danger);color:#fff}
+.container-card{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:7px;background:#fff;cursor:pointer;transition:all .15s}
+.container-card:hover{background:var(--bg);border-color:var(--primary)}
+.container-card .no{font-weight:600;min-width:130px;font-size:13px}
+.container-card .meta{font-size:11.5px;color:var(--text-muted);flex:1}
+.land-record{border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:#fcfcfc}
+.land-record .row1{display:flex;gap:14px;align-items:center;margin-bottom:5px;flex-wrap:wrap}
+.land-record .row1 strong{font-size:13.5px}
+.land-record .row1 .badge{font-size:11px;padding:1px 7px;background:var(--info);color:#fff;border-radius:3px;font-weight:500}
+.land-record .row2{font-size:12px;color:var(--text-muted)}
+.masked{letter-spacing:2px;color:var(--text-muted);font-family:monospace;font-weight:600}
+/* 登录页 */
+.login-back{position:fixed;inset:0;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.login-box{background:#fff;border-radius:12px;padding:36px 40px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:380px}
+.login-box h1{font-size:20px;margin-bottom:6px;color:var(--primary-dark)}
+.login-box .sub{font-size:12.5px;color:var(--text-muted);margin-bottom:24px}
+.login-box label{display:block;font-size:12px;color:var(--text-muted);margin-bottom:5px;font-weight:500}
+.login-box input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;margin-bottom:14px;outline:none;font-family:inherit}
+.login-box input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.login-box button{width:100%;padding:11px;background:var(--primary);color:#fff;border:0;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-box button:hover{background:var(--primary-dark)}
+.login-box .err{color:var(--danger);font-size:12.5px;margin-bottom:12px;display:none}
+.login-box .hint{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);line-height:1.6}
+/* 移动端汉堡菜单 */
+.menu-toggle{display:none;background:transparent;border:0;font-size:22px;cursor:pointer;padding:6px;color:var(--text)}
+/* 响应式断点 */
+@media (max-width:900px){
+  header{padding:0 14px;gap:8px}
+  header .right{gap:6px}
+  header .clock{display:none}
+  .menu-toggle{display:block}
+  nav.sidebar{position:fixed;top:56px;left:-200px;height:calc(100vh - 56px);width:200px;z-index:90;transition:left .2s;box-shadow:2px 0 10px rgba(0,0,0,.1)}
+  nav.sidebar.open{left:0}
+  nav.sidebar .nav-item{padding:13px 16px;font-size:14px}
+  main.content{padding:16px}
+  .detail-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .form-row,.form-row.col3{grid-template-columns:1fr}
+  .page-header{flex-direction:column;align-items:flex-start}
+  table.tbl{font-size:12px}
+  table.tbl th,table.tbl td{padding:7px 8px}
+  /* 卡片化表格（移动端） */
+  table.tbl.card-mode thead{display:none}
+  table.tbl.card-mode tr{display:block;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;padding:6px 8px;background:#fff}
+  table.tbl.card-mode td{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed var(--border);padding:5px 0;font-size:12.5px}
+  table.tbl.card-mode td:last-child{border-bottom:none}
+  table.tbl.card-mode td::before{content:attr(data-label);color:var(--text-muted);font-size:11px;flex-shrink:0;margin-right:8px}
+  table.tbl.card-mode td.num{text-align:right}
+  table.tbl.card-mode .center,.tbl.card-mode .nowrap{text-align:right}
+}
+@media (max-width:480px){
+  .kpi-row{grid-template-columns:1fr}
+  .kpi .value{font-size:20px}
+  header .lang-switch button{padding:4px 6px;font-size:11px}
+}
+
+/* 多选状态过滤下拉 */
+.multisel{position:relative;display:inline-block}
+.ms-trigger{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);cursor:pointer;min-width:140px;height:32px;line-height:1.2;font-family:inherit}
+.ms-trigger:hover{border-color:var(--primary);background:var(--bg-soft)}
+.multisel.open .ms-trigger{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,0.15)}
+.ms-label{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-count{background:var(--primary);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600;line-height:1.4}
+.ms-count[hidden]{display:none}
+.ms-arrow{color:var(--text-muted);font-size:10px;transition:transform 0.15s}
+.multisel.open .ms-arrow{transform:rotate(180deg)}
+.ms-panel{position:absolute;top:calc(100% + 4px);left:0;min-width:200px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:6px;z-index:200;max-height:340px;overflow-y:auto}
+.ms-panel[hidden]{display:none}
+.ms-actions{display:flex;gap:14px;padding:4px 6px 6px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.ms-actions a{color:var(--primary-dark);font-size:12px;cursor:pointer;user-select:none}
+.ms-actions a:hover{text-decoration:underline}
+.ms-item{display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:5px;font-size:13px;line-height:1.3}
+.ms-item:hover{background:var(--bg-soft)}
+.ms-item input[type=checkbox]{margin:0;width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.ms-item span{flex:1}
+
+/* 押金区段（v3.0.11） */
+.deposit-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
+.deposit-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.deposit-amount{font-size:18px;font-weight:600;color:var(--primary-dark)}
+.deposit-actions{display:flex;gap:6px;flex-wrap:wrap}
+.deposit-proofs{display:grid;grid-template-columns:1fr;gap:12px}
+.deposit-proof{background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.proof-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.proof-imgs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;min-height:32px}
+.proof-thumb{position:relative;width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#fff}
+.proof-thumb img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block}
+.proof-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:0;font-size:14px;cursor:pointer;line-height:1;padding:0}
+.proof-del:hover{background:var(--danger)}
+.upload-btn{display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;padding:4px 10px}
+.upload-btn:hover{background:var(--bg-soft)}
+
+/* KPI 卡可点击 + 表格行可点击（v3.0.11 指挥台点入） */
+.kpi{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.kpi:active{transform:translateY(0)}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--bg-soft)}
+.cust-link{color:var(--primary-dark);cursor:pointer;font-weight:500;text-decoration:none}
+.cust-link:hover{text-decoration:underline}
+.kpi-jump-hint{font-size:10px;color:var(--text-muted);text-align:right;margin-top:2px;letter-spacing:.5px}
+
+/* 指挥台点入 banner（v3.0.11） */
+.jump-banner{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#dbeafe 0%,#fff 60%);border:1px solid #93c5fd;border-radius:8px;padding:8px 14px;margin:0 0 14px;font-size:13px;color:#1e40af}
+.jump-banner .btn{background:transparent;border:1px solid #93c5fd;color:#1e40af}
+.jump-banner .btn:hover{background:#bfdbfe}
+/* v3.0.12 ETA 日期范围 */
+.date-range{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted)}
+.date-range-label{color:var(--text-muted);font-size:12px;margin-right:2px}
+.date-range-sep{color:var(--text-muted);font-size:14px}
+.date-range input[type="date"]{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-family:inherit;color:var(--text);background:#fff;cursor:pointer;min-width:130px}
+.date-range input[type="date"]:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,122,140,.12)}
+.date-range input[type="date"]:hover{border-color:var(--primary-light)}
+@media (max-width:640px){
+  .date-range{flex-wrap:wrap}
+  .date-range input[type="date"]{min-width:0;flex:1;max-width:140px}
+}
+
+/* 详情页警示色（v3.0.11） */
+.warning{color:#f59e0b;font-weight:600}
+</style>
+</head>
+<body>
+<!-- 登录页 -->
+<div class="login-back" id="login-page">
+  <div class="login-box">
+    <h1 data-i18n="app_title">Beira 集装箱柜清关</h1>
+    <div class="sub" data-i18n="login_sub">贝拉港中国客户清关 · v3.0 完整版</div>
+    <div class="err" id="login-err" data-i18n="login_err">用户名或密码错误</div>
+    <label data-i18n="login_user">用户名</label>
+    <input id="login-username" placeholder="admin" />
+    <label data-i18n="login_pass">密码</label>
+    <input id="login-password" type="password" placeholder="admin123 / pass123" />
+    <button onclick="doLogin()" data-i18n="login_btn">登 录</button>
+    <div class="hint">
+      <strong data-i18n="login_demo_title">演示账号：</strong><br>
+      <span data-i18n="login_demo_admin">管理员：admin / admin123</span><br>
+      <span data-i18n="login_demo_worker">工人：worker1 / pass123</span>
+    </div>
+  </div>
+</div>
+
+<!-- 顶部 -->
+<header id="app-header" style="display:none;">
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+  <div class="logo">Beira 集装箱柜清关 <span class="badge">v3.0</span></div>
+  <div class="right">
+    <span class="clock"><span id="clock"></span></span>
+    <div class="lang-switch">
+      <button id="lang-zh" class="active" onclick="setLang('zh')">中文</button>
+      <button id="lang-pt" onclick="setLang('pt')">PT</button>
+    </div>
+    <div class="user-menu" id="user-menu" onclick="this.classList.toggle('open')">
+      <span class="role-badge" id="user-role-badge">admin</span>
+      <span id="user-display">管理员</span>
+      <span style="color:var(--text-muted)">▾</span>
+      <div class="dropdown">
+        <div onclick="logout()" data-i18n="logout">退出登录</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="layout" id="app-layout" style="display:none;">
+<nav class="sidebar" id="sidebar">
+  <div class="nav-item active" data-view="dashboard"><span class="nav-icon">⚑</span><span data-i18n="nav_dashboard">指挥台</span><span class="count" id="nav-issue-count"></span></div>
+  <div class="nav-item" data-view="customers"><span class="nav-icon">☻</span><span data-i18n="nav_customers">客户</span><span class="count" id="nav-customer-count">0</span></div>
+  <div class="nav-item" data-view="shipments"><span class="nav-icon">⎙</span><span data-i18n="nav_shipments">提单</span><span class="count" id="nav-shipment-count">0</span></div>
+  <div class="nav-item" data-view="containers"><span class="nav-icon">▣</span><span data-i18n="nav_containers">柜档案</span><span class="count" id="nav-container-count">0</span></div>
+  <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span><span data-i18n="nav_settings">数据管理</span></div>
+</nav>
+<main class="content">
+  <section id="view-dashboard" class="view active">
+    <div class="page-header">
+      <div><h1 data-i18n="dash_title">指挥台</h1><div class="sub" data-i18n="dash_sub">贝拉港集装箱柜清关 · 一票一眼看清</div></div>
+      <div><button class="btn primary" onclick="openShipmentModal()" data-i18n="btn_new_ship">+ 新建提单</button></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi" onclick="jumpFromKpi('active')"><div class="label" data-i18n="kpi_ship">本月提单 / 柜</div><div class="value" id="kpi-shipment">0 / 0</div><div class="sub" id="kpi-shipment-sub"></div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+      <div class="kpi warn" onclick="jumpFromKpi('portwarn')"><div class="label" data-i18n="kpi_port_warn">滞港预警</div><div class="value" id="kpi-overdue-port">0</div><div class="sub" data-i18n="kpi_port_warn_sub">剩余 ≤3 天 / 已超期</div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+      <div class="kpi danger" onclick="jumpFromKpi('receivable')"><div class="label" data-i18n="kpi_receivable">应收未收</div><div class="value" id="kpi-receivable">0</div><div class="sub" id="kpi-receivable-sub"></div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+      <div class="kpi warning-soft" onclick="jumpFromKpi('trippending')"><div class="label" data-i18n="kpi_trip">待交客户单据</div><div class="value" id="kpi-trip-pending">0</div><div class="sub" id="kpi-trip-pending-sub"></div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+      <div class="kpi success" onclick="jumpFromKpi('margin')"><div class="label" data-i18n="kpi_margin">本月毛利</div><div class="value" id="kpi-margin">0</div><div class="sub" data-i18n="kpi_margin_sub">已签收提单</div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+      <div class="kpi info" onclick="jumpFromKpi('deposit')"><div class="label" data-i18n="kpi_deposit">未退押金</div><div class="value" id="kpi-deposit">0</div><div class="sub" data-i18n="kpi_deposit_sub">已收未退</div><div class="kpi-jump-hint" data-i18n="kpi_jump_hint">点击查看 →</div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h2 data-i18n="dash_table">提单一览（按 ETA 排序）</h2>
+        <div class="multisel" id="dash-status-ms" data-view="dashboard">
+          <button type="button" class="ms-trigger" onclick="msToggle('dash-status-ms')">
+            <span class="ms-label" data-i18n="ms_placeholder">选择状态…</span>
+            <span class="ms-count" hidden>0</span>
+            <span class="ms-arrow">▾</span>
+          </button>
+          <div class="ms-panel" hidden>
+            <div class="ms-actions">
+              <a onclick="msAll('dash-status-ms')" data-i18n="ms_all">全选</a>
+              <a onclick="msNone('dash-status-ms')" data-i18n="ms_none">清空</a>
+            </div>
+            <label class="ms-item"><input type="checkbox" value="in_transit" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_in_transit">在途</span></label>
+            <label class="ms-item"><input type="checkbox" value="at_port" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_at_port">在港</span></label>
+            <label class="ms-item"><input type="checkbox" value="clearing" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_clearing">清关中</span></label>
+            <label class="ms-item"><input type="checkbox" value="released" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_released">已放行</span></label>
+            <label class="ms-item"><input type="checkbox" value="landtransport" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_landtransport">已陆运</span></label>
+            <label class="ms-item"><input type="checkbox" value="delivered" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_delivered">已完结</span></label>
+            <label class="ms-item"><input type="checkbox" value="on_hold" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_on_hold">挂起</span></label>
+            <label class="ms-item"><input type="checkbox" value="cancelled" onchange="msChanged('dash-status-ms')"/> <span data-i18n="st_cancelled">已取消</span></label>
+          </div>
+        </div>
+      </div>
+      <table class="tbl" id="dash-shipment-table">
+        <thead><tr><th data-i18n="th_bl">提单号</th><th data-i18n="th_customer">客户</th><th data-i18n="th_product">商品</th><th class="center" data-i18n="th_cnt">柜数</th><th class="center" data-i18n="th_status">状态</th><th class="center" data-i18n="th_trip">单据</th><th class="nowrap" data-i18n="th_eta">ETA</th><th class="center" data-i18n="th_portdays">在港</th><th class="num" data-i18n="th_recv">应收</th><th class="num" data-i18n="th_paid">实收</th><th class="num" data-i18n="th_margin">毛利</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2 data-i18n="dash_overdue">欠款提醒</h2>
+      <table class="tbl" id="dash-overdue-table">
+        <thead><tr><th data-i18n="th_bl">提单</th><th data-i18n="th_customer">客户</th><th data-i18n="th_node">节点</th><th class="num" data-i18n="th_amt">金额</th><th class="nowrap" data-i18n="th_due">到期</th><th class="nowrap" data-i18n="th_status">状态</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <section id="view-customers" class="view">
+    <div class="page-header"><div><h1 data-i18n="cust_title">客户档案</h1><div class="sub" data-i18n="cust_sub">在莫中国老板 + 个人客户</div></div><div><button class="btn primary" onclick="openCustomerModal()" data-i18n="btn_new_cust">+ 新建客户</button></div></div>
+    <div class="toolbar"><input id="cust-search" data-i18n-placeholder="ph_search_cust" placeholder="按公司/姓名/微信搜索" style="flex:1;max-width:300px;" /></div>
+    <div class="card" style="padding:0;">
+      <table class="tbl" id="customer-table">
+        <thead><tr><th data-i18n="th_name">公司/姓名</th><th data-i18n="th_type">类型</th><th data-i18n="th_biz">主营</th><th class="center" data-i18n="th_terms">付款条款</th><th class="center" data-i18n="th_credit">信用分</th><th class="center" data-i18n="th_cnt">提单</th><th class="num" data-i18n="th_debt">欠款</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <section id="view-customer-detail" class="view">
+    <div class="page-header"><div><h1 id="custd-title">客户档案</h1><div class="sub" id="custd-sub"></div></div><div style="display:flex;gap:8px;"><button class="btn ghost" onclick="navigate('customers')" data-i18n="btn_back">← 返回</button><button class="btn" id="custd-edit-btn">编辑</button></div></div>
+    <div class="detail-grid">
+      <div class="card"><h2 data-i18n="detail_base">基本信息</h2><div id="custd-base"></div></div>
+      <div class="card"><h2 data-i18n="detail_summary">汇总</h2><div id="custd-summary"></div></div>
+    </div>
+    <div class="card"><h2 id="custd-ship-title">该客户提单</h2><div id="custd-shipments"></div></div>
+  </section>
+  <section id="view-shipments" class="view">
+    <div class="page-header"><div><h1 data-i18n="ship_title">提单档案</h1><div class="sub" data-i18n="ship_sub">每个提单 = 一票货 · 包含若干柜</div></div><div><button class="btn primary" onclick="openShipmentModal()" data-i18n="btn_new_ship">+ 新建提单</button></div></div>
+    <div class="toolbar">
+      <input id="ship-search" data-i18n-placeholder="ph_search_ship" placeholder="按提单号/商品/HS/柜号搜索" style="flex:1;max-width:300px;" />
+      <div class="multisel" id="ship-status-ms" data-view="shipments">
+        <button type="button" class="ms-trigger" onclick="msToggle('ship-status-ms')">
+          <span class="ms-label" data-i18n="ms_placeholder">选择状态…</span>
+          <span class="ms-count" hidden>0</span>
+          <span class="ms-arrow">▾</span>
+        </button>
+        <div class="ms-panel" hidden>
+          <div class="ms-actions">
+            <a onclick="msAll('ship-status-ms')" data-i18n="ms_all">全选</a>
+            <a onclick="msNone('ship-status-ms')" data-i18n="ms_none">清空</a>
+          </div>
+          <label class="ms-item"><input type="checkbox" value="in_transit" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_in_transit">在途</span></label>
+          <label class="ms-item"><input type="checkbox" value="at_port" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_at_port">在港</span></label>
+          <label class="ms-item"><input type="checkbox" value="clearing" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_clearing">清关中</span></label>
+          <label class="ms-item"><input type="checkbox" value="released" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_released">已放行</span></label>
+          <label class="ms-item"><input type="checkbox" value="landtransport" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_landtransport">已陆运</span></label>
+          <label class="ms-item"><input type="checkbox" value="delivered" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_delivered">已完结</span></label>
+          <label class="ms-item"><input type="checkbox" value="on_hold" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_on_hold">挂起</span></label>
+          <label class="ms-item"><input type="checkbox" value="cancelled" onchange="msChanged('ship-status-ms')"/> <span data-i18n="st_cancelled">已取消</span></label>
+        </div>
+      </div>
+      <select id="ship-customer-filter"><option value="" data-i18n="filter_all_cust">全部客户</option></select>
+      <div class="date-range">
+        <span class="date-range-label" data-i18n="eta_range">ETA 日期范围</span>
+        <input type="date" id="ship-eta-from" onchange="onShipEtaChange()" aria-label="ETA from" />
+        <span class="date-range-sep">→</span>
+        <input type="date" id="ship-eta-to" onchange="onShipEtaChange()" aria-label="ETA to" />
+        <button type="button" class="btn sm" id="ship-eta-clear-btn" onclick="clearShipEta()" data-i18n="eta_clear" hidden>清除</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0;">
+      <table class="tbl" id="shipment-table">
+        <thead><tr><th data-i18n="th_bl">提单号</th><th data-i18n="th_customer">客户</th><th data-i18n="th_product">商品</th><th class="nowrap" data-i18n="th_hs">HS</th><th data-i18n="th_route">起运→目的</th><th class="center" data-i18n="th_cnt">柜数</th><th class="center" data-i18n="th_status">状态</th><th class="center" data-i18n="th_trip">客户单据</th><th class="nowrap" data-i18n="th_tripdate">交付日期</th><th class="nowrap" data-i18n="th_eta">ETA</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <section id="view-shipment-detail" class="view">
+    <div class="page-header">
+      <div><h1 id="detail-title">提单详情</h1><div class="sub" id="detail-sub">...</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn ghost" onclick="navigate('shipments')" data-i18n="btn_back">← 返回</button>
+        <button class="btn" onclick="openShipmentModal(currentShipmentId)" data-i18n="btn_edit_ship">编辑提单</button>
+        <button class="btn" onclick="openContainerModal(currentShipmentId)" data-i18n="btn_add_cont">+ 添加柜</button>
+        <button class="btn danger" onclick="deleteShipment(currentShipmentId)" data-i18n="btn_delete">删除</button>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="card"><h2 data-i18n="detail_base">提单基本信息</h2><div id="detail-base"></div></div>
+      <div class="card"><h2 data-i18n="detail_summary">本票汇总</h2><div id="detail-summary"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <h2 data-i18n="detail_containers">本票包含的柜子</h2>
+      <div id="detail-containers"></div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-pane="docs" data-i18n="tab_docs">单证（共享）</div>
+        <div class="tab" data-pane="payment" data-i18n="tab_payment">应收/实收</div>
+        <div class="tab" data-pane="costs" data-i18n="tab_costs">成本/毛利</div>
+        <div class="tab" data-pane="milestones" data-i18n="tab_milestones">流程节点</div>
+        <div class="tab" data-pane="comms" data-i18n="tab_comms">沟通记录</div>
+        <div class="tab" data-pane="triplicado" data-i18n="trip_title">客户清关单</div>
+      </div>
+      <div class="pane" id="pane-docs"></div>
+      <div class="pane" id="pane-payment" style="display:none"></div>
+      <div class="pane" id="pane-costs" style="display:none"></div>
+      <div class="pane" id="pane-milestones" style="display:none"></div>
+      <div class="pane" id="pane-comms" style="display:none"></div>
+      <div class="pane" id="pane-triplicado" style="display:none"></div>
+    </div>
+  </section>
+  <section id="view-containers" class="view">
+    <div class="page-header"><div><h1 data-i18n="cont_title">柜档案</h1><div class="sub" data-i18n="cont_sub">所有集装箱柜</div></div></div>
+    <div class="toolbar">
+      <input id="cont-search" data-i18n-placeholder="ph_search_cont" placeholder="按柜号/提单号/商品搜索" style="flex:1;max-width:300px;" />
+      <div class="multisel" id="cont-status-ms" data-view="containers">
+        <button type="button" class="ms-trigger" onclick="msToggle('cont-status-ms')">
+          <span class="ms-label" data-i18n="ms_placeholder">选择状态…</span>
+          <span class="ms-count" hidden>0</span>
+          <span class="ms-arrow">▾</span>
+        </button>
+        <div class="ms-panel" hidden>
+          <div class="ms-actions">
+            <a onclick="msAll('cont-status-ms')" data-i18n="ms_all">全选</a>
+            <a onclick="msNone('cont-status-ms')" data-i18n="ms_none">清空</a>
+          </div>
+          <label class="ms-item"><input type="checkbox" value="in_transit" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_in_transit">在途</span></label>
+          <label class="ms-item"><input type="checkbox" value="at_port" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_at_port">在港</span></label>
+          <label class="ms-item"><input type="checkbox" value="clearing" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_clearing">清关中</span></label>
+          <label class="ms-item"><input type="checkbox" value="released" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_released">已放行</span></label>
+          <label class="ms-item"><input type="checkbox" value="landtransport" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_landtransport">已陆运</span></label>
+          <label class="ms-item"><input type="checkbox" value="delivered" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_delivered">已完结</span></label>
+          <label class="ms-item"><input type="checkbox" value="on_hold" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_on_hold">挂起</span></label>
+          <label class="ms-item"><input type="checkbox" value="cancelled" onchange="msChanged('cont-status-ms')"/> <span data-i18n="st_cancelled">已取消</span></label>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;">
+      <table class="tbl" id="container-table">
+        <thead><tr><th data-i18n="th_contno">柜号</th><th data-i18n="th_boxtype">箱型</th><th data-i18n="th_bl">所属提单</th><th data-i18n="th_customer">客户</th><th class="center" data-i18n="th_status">状态</th><th class="center" data-i18n="th_portdays">在港</th><th class="center" data-i18n="deposit_title">押金</th><th class="nowrap" data-i18n="th_pickup">提货日</th><th class="nowrap" data-i18n="th_delivery">签收日</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <section id="view-container-detail" class="view">
+    <div class="page-header">
+      <div><h1 id="cd-title">柜详情</h1><div class="sub" id="cd-sub"></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn ghost" onclick="navigate(currentContainerId?'containers':'shipments')" data-i18n="btn_back">← 返回</button>
+        <button class="btn" onclick="openContainerModal(currentShipmentId, currentContainerId)" data-i18n="btn_edit_cont">编辑柜</button>
+        <button class="btn" onclick="openLandTransportModal(currentContainerId)" data-i18n="btn_add_land">+ 添加陆运</button>
+        <button class="btn" onclick="openDepositModal(currentContainerId)" data-i18n="deposit_title">+ 编辑押金</button>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="card"><h2 data-i18n="cd_base">柜基本信息</h2><div id="cd-base"></div></div>
+      <div class="card"><h2 data-i18n="cd_summary">本柜汇总</h2><div id="cd-summary"></div></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="deposit_section">押金信息</h2>
+      <div id="cd-deposit"></div>
+    </div>
+    <div class="card">
+      <h2 data-i18n="cd_land">陆运记录</h2>
+      <div id="cd-land-records"></div>
+    </div>
+  </section>
+  <section id="view-settings" class="view">
+    <div class="page-header"><div><h1 data-i18n="set_title">数据管理</h1><div class="sub" data-i18n="set_sub">导入/导出/重置/账号</div></div></div>
+    <div class="card" style="max-width:680px;">
+      <h2 data-i18n="set_export">导出</h2>
+      <button class="btn primary" onclick="exportAllJSON()" data-i18n="btn_export_all">导出全部 (JSON)</button>
+      <button class="btn" onclick="exportShipmentsCSV()" style="margin-left:8px;" data-i18n="btn_export_ship">导出提单 (CSV)</button>
+      <button class="btn" onclick="exportContainersCSV()" style="margin-left:8px;" data-i18n="btn_export_cont">导出柜 (CSV)</button>
+    </div>
+    <div class="card" style="max-width:680px;">
+      <h2 data-i18n="set_import">导入</h2>
+      <input type="file" id="import-json" accept=".json" />
+    </div>
+    <div class="card admin-only" style="max-width:680px;">
+      <h2 data-i18n="set_demo">演示数据</h2>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;" data-i18n="set_demo_sub">6 客户 + 6 提单（含 1/2/3/7/11 柜/票），覆盖在港/清关/超期/已签收各种状态，含陆运记录。</p>
+      <button class="btn" onclick="loadDemoData()" data-i18n="btn_load_demo">加载演示数据</button>
+    </div>
+    <div class="card admin-only" style="max-width:680px;border-color:var(--danger);">
+      <h2 style="color:var(--danger);" data-i18n="set_danger">危险操作</h2>
+      <button class="btn danger" onclick="clearAllData()" data-i18n="btn_clear_all">清空全部数据</button>
+    </div>
+    <div class="card admin-only" id="admin-only-tip" style="max-width:680px;background:var(--bg-soft);">
+      <div style="color:var(--text-muted);font-size:12.5px;" data-i18n="admin_only_hint">以下功能仅管理员可见：导入文件、加载演示数据、清空全部数据。</div>
+    </div>
+  </section>
+</main>
+</div>
+<div class="modal-back" id="modal-back"><div class="modal" id="modal-content"></div></div>
+
+<script>
+
+// ============================================================
+// I18N 双语字典
+// ============================================================
+const I18N={
+  zh:{
+    app_title:"Beira 集装箱柜清关",login_sub:"贝拉港中国客户清关 · v3.0 完整版",login_err:"用户名或密码错误",
+    login_user:"用户名",login_pass:"密码",login_btn:"登 录",login_demo_title:"演示账号：",login_demo_admin:"管理员：admin / admin123",login_demo_worker:"工人：worker1 / pass123",
+    logout:"退出登录",role_admin:"管理员",role_worker:"工人",
+    nav_dashboard:"指挥台",nav_customers:"客户",nav_shipments:"提单",nav_containers:"柜档案",nav_settings:"数据管理",
+    dash_title:"指挥台",dash_sub:"贝拉港集装箱柜清关 · 一票一眼看清",
+    btn_new_ship:"+ 新建提单",btn_new_cust:"+ 新建客户",btn_new_cont:"+ 新建柜",btn_add_cont:"+ 添加柜",btn_add_land:"+ 添加陆运",btn_edit_ship:"编辑提单",btn_edit_cont:"编辑柜",btn_back:"← 返回",btn_delete:"删除",btn_save:"保存",btn_cancel:"取消",btn_export_all:"导出全部 (JSON)",btn_export_ship:"导出提单 (CSV)",btn_export_cont:"导出柜 (CSV)",btn_clear_all:"清空全部数据",btn_load_demo:"加载演示数据",admin_only_hint:"以下功能仅管理员可见：导入文件、加载演示数据、清空全部数据。如需操作请联系老板。",admin_only_denied:"权限不足：仅管理员可执行此操作",
+    kpi_ship:"本月提单 / 柜",kpi_port_warn:"滞港预警",kpi_port_warn_sub:"剩余 ≤3 天 / 已超期",kpi_receivable:"应收未收",kpi_trip:"待交客户单据",kpi_trip_sub:"Triplicado 未交付",kpi_margin:"本月毛利",kpi_margin_sub:"已签收提单",
+    dash_table:"提单一览（按 ETA 排序）",dash_overdue:"欠款提醒",
+    filter_all:"全部状态",filter_all_cust:"全部客户",ms_all:"全选",ms_none:"清空",ms_placeholder:"选择状态…",
+    th_trip:"客户单据",th_tripdate:"交付日期",
+    trip_title:"客户清关单（Triplicado）",trip_status_pending:"⏳ 待交客户",trip_status_done:"✅ 已交付",trip_mark_btn:"标记为已交付",trip_undo_btn:"撤销交付",trip_delivered_at:"交付时间",trip_note:"备注（如：现场交/微信发/客户代领）",trip_pending_hint:"清关单第三联（Triplicado）尚未交给客户 · 客户在 BEIRA 港提货必须出示此单",
+    th_bl:"提单号",th_customer:"客户",th_product:"商品",th_cnt:"柜数",th_status:"状态",th_eta:"ETA",th_portdays:"在港",th_recv:"应收",th_paid:"实收",th_margin:"毛利",th_act:"操作",
+    th_node:"节点",th_amt:"金额",th_due:"到期",th_name:"公司/姓名",th_type:"类型",th_biz:"主营",th_terms:"付款条款",th_credit:"信用分",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
+    cust_title:"客户档案",cust_sub:"在莫中国老板 + 个人客户",ph_search_cust:"按公司/姓名/微信搜索",
+    ship_title:"提单档案",ship_sub:"每个提单 = 一票货 · 包含若干柜",ph_search_ship:"按提单号/商品/HS/柜号搜索",
+    cont_title:"柜档案",cont_sub:"所有集装箱柜",ph_search_cont:"按柜号/提单号/商品搜索",
+    detail_base:"提单基本信息",detail_summary:"本票汇总",detail_containers:"本票包含的柜子",
+    tab_docs:"单证（共享）",tab_payment:"应收/实收",tab_costs:"成本/毛利",tab_milestones:"流程节点",tab_comms:"沟通记录",tab_trip:"客户单据",
+    cd_base:"柜基本信息",cd_summary:"本柜汇总",cd_land:"陆运记录",cd_title:"柜详情",
+    set_title:"数据管理",set_sub:"导入/导出/重置/账号",set_export:"导出",set_import:"导入",set_demo:"演示数据",set_demo_sub:"6 客户 + 6 提单（含 1/2/3/7/11 柜/票），覆盖在港/清关/超期/已签收各种状态，含陆运记录。",set_danger:"危险操作",
+    // 状态
+    st_in_transit:"在途",st_at_port:"在港",st_clearing:"清关中",st_released:"已放行",st_landtransport:"已陆运",st_delivered:"已完结",st_on_hold:"挂起",st_cancelled:"已取消",
+    // 8 阶段
+    ms_booking:"已接单",ms_loading:"已发船",ms_sea:"海运在途",ms_arrival:"已到港",ms_declaration:"清关中",ms_inspection:"海关查验",ms_release:"已放行",ms_pickup:"已提柜",ms_land:"已陆运",ms_done:"已完结",
+    // 单证
+    doc_invoice:"商业发票",doc_packing:"装箱单",doc_bl:"海运提单",doc_co:"原产地证",doc_ciq:"CIQ/装运前检验",doc_fumi:"熏蒸证书",doc_insurance:"保险单",doc_permit:"进口许可证",
+    doc_icr:"ICR 验车报告",doc_seal_record:"铅封记录",doc_container_photo:"柜子照片",
+    // 费用类型
+    cost_tariff:"关税",cost_iva:"CIVA/IVA",cost_agent:"代理费",cost_inspect:"查验费",cost_translate:"翻译费",cost_co_agent:"原产地证代办",cost_misc:"杂费",cost_pickup:"提货费",cost_delivery:"派送费",cost_storage:"仓储/滞港费",cost_land:"陆运费",
+    // 付款条款
+    pt_prepay:"全预付",pt_split_50:"50%预付 + 提货前",pt_split_30:"30%预付 + 提货前",pt_credit_30:"月结30天",pt_credit_60:"月结60天",
+    // 滞港
+    port_normal:"正常",port_warn:"⚠ 即将滞港",port_over:"超期",port_critical:"严重超期",
+    // 客户类型
+    ct_boss:"中国老板",ct_individual:"个人客户",
+    // 其他
+    cnt:"柜",count_unit:"柜",ship_count_label:"提单",
+    land_record:"陆运",add_land:"+ 添加陆运记录",
+    hidden_admin:"[管理员可见]",
+    // 表单校验提示（v3.0.10 收编）
+    err_cust_required:"请填客户名",err_bl_required:"请填提单号",err_cont_required:"请填柜号",
+    err_plate_required:"请填车牌号",err_amount_required:"请填金额",err_landfee_required:"请填陆运费",
+    note_saved:"备注已保存",
+    // 押金（v3.0.11 新增）
+    deposit_title:"货柜押金",deposit_section:"押金信息",
+    deposit_amount:"押金金额",deposit_currency:"币种",deposit_status:"押金状态",
+    deposit_no:"无押金",deposit_collected:"✅ 已收客户",deposit_refunded:"💰 已退客户",
+    deposit_mark_collected:"标记为已收客户",deposit_mark_refunded:"标记为已退客户",
+    deposit_mark_pending:"撤销标记",
+    deposit_proof_collected:"① 客户付我凭证",deposit_proof_paid_to_ship:"② 我付船公司凭证",
+    deposit_proof_ship_refund:"③ 船公司退我凭证",deposit_proof_refunded_client:"④ 我退客户凭证",
+    deposit_no_proof:"暂无凭证",deposit_upload:"上传图片",deposit_delete:"删除",
+    kpi_deposit:"未退押金",kpi_deposit_sub:"已收未退",
+    deposit_currency_mzn:"MZN",deposit_currency_usd:"USD",deposit_currency_eur:"EUR",deposit_currency_cny:"CNY",
+    deposit_filter_has:"有押金的柜",deposit_filter_pending:"未退押金的柜",
+    btn_edit:"编辑",notes:"备注",
+    // ETA 日期范围筛选（v3.0.12）
+    eta_range:"ETA 日期范围",eta_from:"ETA 起",eta_to:"ETA 至",eta_clear:"清除日期",
+    // 过滤 banner + 空状态（v3.0.13）
+    filter_jump_label:"🔍 已过滤：",filter_jump_clear:"清除过滤",
+    filter_label_active:"未完结提单",filter_label_portwarn:"滞港预警柜",
+    filter_label_receivable:"有未收款的提单",filter_label_trippending:"待交客户单据的提单",
+    filter_label_margin:"已签收提单",filter_label_deposit:"有未退押金的柜",
+    empty_dash_shipments:'暂无数据 · 点"+ 新建提单"开始',
+    empty_dash_receivables:"无欠款 · 老板省心 😎",
+    empty_customers:"暂无客户",empty_customer_shipments:"该客户暂无提单",
+    empty_shipments:"暂无提单",empty_shipments_filtered:"暂无符合条件的提单",
+    empty_shipment_containers:'本票没有柜子 · 点"+ 添加柜"',
+    empty_comms:"暂无沟通",
+    empty_containers:"暂无柜子",empty_containers_filtered:"暂无符合条件的柜子",
+    empty_land_records:"无陆运记录",
+    // KPI 跳转提示 + 催款话术（v3.0.13）
+    kpi_jump_hint:"点击查看 →",
+    btn_copy_reminder:"催款话术",
+    copy_reminder_done:"催款话术已复制到剪贴板 ✅\n\n",
+  },
+  pt:{
+    app_title:"Despacho Aduaneiro Beira",login_sub:"Despacho para clientes chineses · v3.0",login_err:"Utilizador ou senha errados",
+    login_user:"Utilizador",login_pass:"Senha",login_btn:"Entrar",login_demo_title:"Contas demo:",login_demo_admin:"Admin: admin / admin123",login_demo_worker:"Operário: worker1 / pass123",
+    logout:"Sair",role_admin:"Administrador",role_worker:"Operário",
+    nav_dashboard:"Painel",nav_customers:"Clientes",nav_shipments:"BLs",nav_containers:"Contentores",nav_settings:"Dados",
+    dash_title:"Painel",dash_sub:"Despacho de contentores Porto de Beira · visão geral",
+    btn_new_ship:"+ Novo BL",btn_new_cust:"+ Novo cliente",btn_new_cont:"+ Novo contentor",btn_add_cont:"+ Contentor",btn_add_land:"+ Transporte",btn_edit_ship:"Editar BL",btn_edit_cont:"Editar contentor",btn_back:"← Voltar",btn_delete:"Apagar",btn_save:"Guardar",btn_cancel:"Cancelar",btn_export_all:"Exportar tudo (JSON)",btn_export_ship:"Exportar BLs (CSV)",btn_export_cont:"Exportar contentores (CSV)",btn_clear_all:"Limpar tudo",btn_load_demo:"Carregar dados demo",admin_only_hint:"Apenas o administrador pode: importar ficheiros, carregar demo, limpar tudo. Contacte o chefe se precisar.",admin_only_denied:"Sem permissão: apenas administrador",
+    kpi_ship:"BLs / Contentores",kpi_port_warn:"Alerta de porto",kpi_port_warn_sub:"≤3 dias / expirado",kpi_receivable:"A receber",kpi_trip:"Doc cliente pendente",kpi_trip_sub:"Triplicado não entregue",kpi_margin:"Margem do mês",kpi_margin_sub:"BLs concluídos",
+    dash_table:"Lista de BLs (por ETA)",dash_overdue:"Alerta de dívida",
+    filter_all:"Todos estados",filter_all_cust:"Todos clientes",ms_all:"Todos",ms_none:"Limpar",ms_placeholder:"Escolher estados…",
+    th_trip:"Doc cliente",th_tripdate:"Entregue em",
+    trip_title:"DU de Cliente (Triplicado)",trip_status_pending:"⏳ Pendente",trip_status_done:"✅ Entregue",trip_mark_btn:"Marcar como entregue",trip_undo_btn:"Desfazer",trip_delivered_at:"Data entrega",trip_note:"Obs (ex: entrega no local / WeChat / retirado pelo cliente)",trip_pending_hint:"O triplicado da DU ainda não foi entregue ao cliente · Necessário para levantar contentores no porto da Beira",
+    th_bl:"BL",th_customer:"Cliente",th_product:"Produto",th_cnt:"Qtd",th_status:"Estado",th_eta:"ETA",th_portdays:"Porto",th_recv:"A receber",th_paid:"Recebido",th_margin:"Margem",th_act:"Acção",
+    th_node:"Nó",th_amt:"Valor",th_due:"Vencimento",th_name:"Nome/Empresa",th_type:"Tipo",th_biz:"Negócio",th_terms:"Termos",th_credit:"Crédito",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
+    cust_title:"Clientes",cust_sub:"Patrões chineses em Moçambique + clientes individuais",ph_search_cust:"Pesquisar empresa/nome",
+    ship_title:"BLs",ship_sub:"Cada BL = uma carga · vários contentores",ph_search_ship:"Pesquisar BL/produto/HS/contentor",
+    cont_title:"Contentores",cont_sub:"Todos os contentores",ph_search_cont:"Pesquisar contentor/BL",
+    detail_base:"Info do BL",detail_summary:"Resumo",detail_containers:"Contentores deste BL",
+    tab_docs:"Documentos",tab_payment:"Receber/Pago",tab_costs:"Custo/Margem",tab_milestones:"Etapas",tab_comms:"Comunicação",tab_trip:"Doc cliente",
+    cd_base:"Info contentor",cd_summary:"Resumo",cd_land:"Transporte terrestre",cd_title:"Detalhe do contentor",
+    set_title:"Gestão de dados",set_sub:"Importar/Exportar/Reset",set_export:"Exportar",set_import:"Importar",set_demo:"Dados demo",set_demo_sub:"6 clientes + 6 BLs (1/2/3/7/11 contentores), vários estados, com registos de transporte.",set_danger:"Acção perigosa",
+    st_in_transit:"Em trânsito",st_at_port:"No porto",st_clearing:"Despachando",st_released:"Liberado",st_landtransport:"Em transporte",st_delivered:"Concluído",st_on_hold:"Suspenso",st_cancelled:"Cancelado",
+    ms_booking:"Recebido",ms_loading:"Embarcado",ms_sea:"Em trânsito",ms_arrival:"Chegada",ms_declaration:"Declaração",ms_inspection:"Inspecção",ms_release:"Liberado",ms_pickup:"Levantado",ms_land:"Transportado",ms_done:"Concluído",
+    doc_invoice:"Factura comercial",doc_packing:"Lista de embalagem",doc_bl:"BL marítimo",doc_co:"Certificado de origem",doc_ciq:"CIQ/Inspecção pré-embarque",doc_fumi:"Certificado fumigação",doc_insurance:"Seguro",doc_permit:"Licença importação",
+    doc_icr:"Relatório ICR",doc_seal_record:"Registo de selo",doc_container_photo:"Foto do contentor",
+    cost_tariff:"Aduana",cost_iva:"CIVA/IVA",cost_agent:"Agente",cost_inspect:"Inspecção",cost_translate:"Tradução",cost_co_agent:"Cert. origem",cost_misc:"Outros",cost_pickup:"Levantamento",cost_delivery:"Entrega",cost_storage:"Armazenagem",cost_land:"Transporte",
+    pt_prepay:"100% adiantado",pt_split_50:"50% + restante",pt_split_30:"30% + restante",pt_credit_30:"30 dias crédito",pt_credit_60:"60 dias crédito",
+    port_normal:"Normal",port_warn:"⚠ A expirar",port_over:"Expirado",port_critical:"Crítico",
+    ct_boss:"Patrão chinês",ct_individual:"Individual",
+    cnt:"unid.",count_unit:"cont.",ship_count_label:"BL",
+    land_record:"Transporte",add_land:"+ Adicionar transporte",
+    hidden_admin:"[só admin]",
+    // Validação de formulário (v3.0.10 i18n)
+    err_cust_required:"Indique o nome do cliente",err_bl_required:"Indique o nº BL",err_cont_required:"Indique o nº do contentor",
+    err_plate_required:"Indique a matrícula",err_amount_required:"Indique o valor",err_landfee_required:"Indique o valor do transporte",
+    note_saved:"Observação guardada",
+    // Depósito (v3.0.11)
+    deposit_title:"Depósito do Contentor",deposit_section:"Informação do Depósito",
+    deposit_amount:"Valor",deposit_currency:"Moeda",deposit_status:"Estado",
+    deposit_no:"Sem depósito",deposit_collected:"✅ Recebido do cliente",deposit_refunded:"💰 Reembolsado ao cliente",
+    deposit_mark_collected:"Marcar como recebido",deposit_mark_refunded:"Marcar como reembolsado",
+    deposit_mark_pending:"Desfazer",
+    deposit_proof_collected:"① Comprov. cliente→eu",deposit_proof_paid_to_ship:"② Comprov. eu→navio",
+    deposit_proof_ship_refund:"③ Comprov. navio→eu",deposit_proof_refunded_client:"④ Comprov. eu→cliente",
+    deposit_no_proof:"Sem comprovativo",deposit_upload:"Carregar imagem",deposit_delete:"Apagar",
+    kpi_deposit:"Depósito pendente",kpi_deposit_sub:"Recebido / não reembolsado",
+    deposit_currency_mzn:"MZN",deposit_currency_usd:"USD",deposit_currency_eur:"EUR",deposit_currency_cny:"CNY",
+    deposit_filter_has:"Contentores com depósito",deposit_filter_pending:"Depósito não reembolsado",
+    btn_edit:"Editar",notes:"Observações",
+    // Filtro de intervalo ETA (v3.0.12)
+    eta_range:"Intervalo ETA",eta_from:"ETA de",eta_to:"ETA até",eta_clear:"Limpar datas",
+    // Banner de filtro + estados vazios (v3.0.13)
+    filter_jump_label:"🔍 Filtrado: ",filter_jump_clear:"Limpar filtro",
+    filter_label_active:"BLs não concluídos",filter_label_portwarn:"Contentores em alerta de porto",
+    filter_label_receivable:"BLs com saldo a receber",filter_label_trippending:"BLs com doc cliente pendente",
+    filter_label_margin:"BLs já concluídos",filter_label_deposit:"Contentores com depósito pendente",
+    empty_dash_shipments:'Sem dados · Clique em "+ Novo BL" para começar',
+    empty_dash_receivables:"Sem dívidas · Patrão descansado 😎",
+    empty_customers:"Sem clientes",empty_customer_shipments:"Este cliente não tem BLs",
+    empty_shipments:"Sem BLs",empty_shipments_filtered:"Sem BLs correspondentes",
+    empty_shipment_containers:'Sem contentores · Clique em "+ Adicionar contentor"',
+    empty_comms:"Sem comunicações",
+    empty_containers:"Sem contentores",empty_containers_filtered:"Sem contentores correspondentes",
+    empty_land_records:"Sem registos de transporte",
+    // Hint KPI + lembrete de cobrança (v3.0.13)
+    kpi_jump_hint:"Clique para ver →",
+    btn_copy_reminder:"Lembrete de cobrança",
+    copy_reminder_done:"Lembrete copiado para a área de transferência ✅\n\n",
+  }
+};
+
+let LANG='zh';
+function t(k){return (I18N[LANG]&&I18N[LANG][k])||I18N.zh[k]||k;}
+function setLang(l){
+  LANG=l;
+  document.getElementById('lang-zh').classList.toggle('active',l==='zh');
+  document.getElementById('lang-pt').classList.toggle('active',l==='pt');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.dataset.i18nPlaceholder);});
+  saveData();
+  renderCurrent();
+}
+
+// ============================================================
+// 数据模型常量
+// ============================================================
+const BOX_TYPES=['20GP','40GP','40HQ','45HQ','20OT','40FR','40RF'];
+
+const SHIP_STAGES=[
+  {key:'booking',name:'已接单',pt:'Recebido'},
+  {key:'loading',name:'已发船',pt:'Embarcado'},
+  {key:'sea',name:'海运在途',pt:'Em trânsito'},
+  {key:'arrival',name:'已到港',pt:'Chegada'},
+  {key:'declaration',name:'清关中',pt:'Declaração'},
+  {key:'release',name:'已放行',pt:'Liberado'}
+];
+
+const CONT_STAGES=[
+  {key:'pickup',name:'已提柜',pt:'Levantado'},
+  {key:'landtransport',name:'已陆运',pt:'Transportado'},
+  {key:'done',name:'已完结',pt:'Concluído'}
+];
+
+const ALL_STAGES=[...SHIP_STAGES,...CONT_STAGES];
+
+const SHARED_DOC_TYPES=[
+  {key:'invoice',name:'商业发票',pt:'Factura',required:true},
+  {key:'packing',name:'装箱单',pt:'Lista embalagem',required:true},
+  {key:'bl',name:'海运提单',pt:'BL',required:true},
+  {key:'co',name:'原产地证',pt:'Cert. origem',required:false},
+  {key:'ciq',name:'CIQ/装运前检验',pt:'CIQ',required:false},
+  {key:'fumi',name:'熏蒸证书',pt:'Fumigação',required:false},
+  {key:'insurance',name:'保险单',pt:'Seguro',required:false},
+  {key:'permit',name:'进口许可证',pt:'Licença',required:false}
+];
+
+const CONT_DOC_TYPES=[
+  {key:'icr',name:'ICR 验车报告',pt:'ICR',hint:'二手设备每个柜都要验'},
+  {key:'seal_record',name:'铅封记录',pt:'Selo'},
+  {key:'container_photo',name:'柜子照片',pt:'Foto'}
+];
+
+const SHARED_COST_TYPES=['关税','CIVA/IVA','代理费','查验费','翻译费','原产地证代办','杂费'];
+const CONT_COST_TYPES=['提货费','派送费','仓储/滞港费','陆运费'];
+
+const STATUS_LABEL={in_transit:'在途',at_port:'在港',clearing:'清关中',released:'已放行',landtransport:'已陆运',delivered:'已完结',on_hold:'挂起',cancelled:'已取消'};
+const STATUS_CLASS={in_transit:'s-info',at_port:'s-info',clearing:'s-warning',released:'s-success',landtransport:'s-info',delivered:'s-success',on_hold:'s-warning',cancelled:'s-neutral'};
+
+// ============================================================
+// 用户与权限
+// ============================================================
+const DEFAULT_USERS=[
+  {username:'admin',password:'admin123',role:'admin',display:'管理员',displayPt:'Administrador'},
+  {username:'worker1',password:'pass123',role:'worker',display:'工人小张',displayPt:'Operário Zhang'}
+];
+
+let currentUser=null;
+function isAdmin(){return currentUser&&currentUser.role==='admin';}
+function canSeeIncome(){return isAdmin();}
+function mask(v){return canSeeIncome()?v:'***';}
+
+// ============================================================
+// 工具函数
+// ============================================================
+const STORAGE_KEY='beira-v30-tracker';
+const USER_KEY='beira-v30-user';
+function loadData(){return data;}
+function saveData(){
+  fetch('/api/data',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(e=>console.error('save failed',e));
+}
+function loadCurrentUser(){return currentUser;}
+function saveCurrentUser(){}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function nowISO(){return new Date().toISOString();}
+function fmtDate(s){if(!s)return'-';const d=new Date(s);return isNaN(d.getTime())?s:d.toLocaleDateString(LANG==='pt'?'pt-PT':'zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'});}
+function fmtDateTime(s){if(!s)return'-';return new Date(s).toLocaleString(LANG==='pt'?'pt-PT':'zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}
+
+// 多选下拉组件
+function msToggle(id){
+  const el=document.getElementById(id);if(!el)return;
+  const isOpen=el.classList.contains('open');
+  // 关闭其他打开的面板
+  document.querySelectorAll('.multisel.open').forEach(o=>{if(o.id!==id)o.classList.remove('open');o.querySelector('.ms-panel').hidden=true;});
+  el.classList.toggle('open',!isOpen);
+  el.querySelector('.ms-panel').hidden=isOpen;
+}
+function msAll(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.querySelectorAll('.ms-item input').forEach(cb=>cb.checked=true);
+  msUpdateLabel(id);
+  msApply(id);
+}
+function msNone(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.querySelectorAll('.ms-item input').forEach(cb=>cb.checked=false);
+  msUpdateLabel(id);
+  msApply(id);
+}
+function msUpdateLabel(id){
+  const el=document.getElementById(id);if(!el)return;
+  const cbs=el.querySelectorAll('.ms-item input');
+  const checked=[...cbs].filter(cb=>cb.checked);
+  const lbl=el.querySelector('.ms-label');
+  const cnt=el.querySelector('.ms-count');
+  if(checked.length===0){
+    lbl.textContent=t('ms_placeholder');
+    cnt.hidden=true;
+  }else if(checked.length===cbs.length){
+    lbl.textContent=t('filter_all');
+    cnt.hidden=true;
+  }else{
+    lbl.textContent=t('filter_all');
+    cnt.textContent=checked.length;
+    cnt.hidden=false;
+  }
+}
+function msChanged(id){
+  msUpdateLabel(id);
+  // 不立即关闭面板，方便连续勾选；只触发重渲染
+  const el=document.getElementById(id);
+  const view=el?.dataset?.view;
+  if(view==='shipments')renderShipments();
+  else if(view==='containers')renderContainers();
+  else if(view==='dashboard')renderDashboard();
+}
+function msApply(id){
+  // 全选/清空后关闭面板
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove('open');
+  el.querySelector('.ms-panel').hidden=true;
+  msChanged(id);
+}
+function getMS(id){
+  const el=document.getElementById(id);if(!el)return[];
+  return [...el.querySelectorAll('.ms-item input:checked')].map(cb=>cb.value);
+}
+// 点击外部关闭
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.multisel')){
+    document.querySelectorAll('.multisel.open').forEach(o=>{o.classList.remove('open');o.querySelector('.ms-panel').hidden=true;});
+  }
+});
+function fmtMoney(n,cur){if(n===null||n===undefined||n==='')return'-';return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2})+' '+(cur||'');}
+function daysBetween(d1,d2){return Math.ceil((new Date(d2)-new Date(d1))/86400000);}
+
+// ============================================================
+// 计算：滞港、应收、毛利
+// ============================================================
+function containerPortDays(c){
+  if(!c.actualArrivalDate)return null;
+  if(c.contMilestones&&c.contMilestones.find(m=>m.stage==='pickup'&&m.actualDate))return null;
+  return daysBetween(c.actualArrivalDate,nowISO());
+}
+function portDaysClass(c){
+  const d=containerPortDays(c);
+  if(d===null)return null;
+  const freeDays=Number(c.freeDays||21);
+  const remaining=freeDays-d;
+  if(remaining<0){
+    if(d-freeDays>=5)return{c:'critical',label:`超期 ${d-freeDays}天`,d};
+    return{c:'over',label:`超期 ${d-freeDays}天`,d};
+  }
+  if(remaining<=3)return{c:'warn',label:`剩${remaining}天`,d};
+  return{c:'normal',label:`${d}天`,d};
+}
+function shipmentTotals(s){
+  const receivable=(s.paymentSchedule||[]).reduce((sum,p)=>sum+Number(p.amount||0),0);
+  const received=(s.paymentSchedule||[]).reduce((sum,p)=>sum+Number(p.paidAmount||0),0);
+  const sharedCost=(s.sharedCosts||[]).reduce((sum,x)=>sum+Number(x.amount||0),0);
+  const contCost=(s.containers||[]).reduce((sum,c)=>sum+(c.containerCosts||[]).reduce((a,x)=>a+Number(x.amount||0),0),0);
+  const landCost=(s.containers||[]).reduce((sum,c)=>sum+(c.landTransportRecords||[]).reduce((a,x)=>a+Number(x.fee||0),0),0);
+  const totalCost=sharedCost+contCost+landCost;
+  const margin=received-totalCost;
+  // 收入：清关费总额（按柜清关费 = 应收/柜数，简化：从 declaredValue 推算）
+  const revenue=Number(s.declaredValue||0);  // 这里实际应是 应收清关费 (从 customer 配的费率算)
+  return{receivable,received,sharedCost,contCost,landCost,totalCost,margin,revenue};
+}
+function shipmentStatus(s){
+  const ms=s.shipMilestones||[];
+  const allShipDone=SHIP_STAGES.every(st=>ms.find(m=>m.stage===st.key&&m.status==='done'));
+  const allContDone=(s.containers||[]).length>0&&(s.containers||[]).every(c=>{
+    return CONT_STAGES.every(st=>{
+      const m=c.contMilestones&&c.contMilestones.find(x=>x.stage===st.key);
+      return m&&m.status==='done';
+    });
+  });
+  if(allShipDone&&allContDone)return'delivered';
+  // 优先看柜阶段
+  const anyContDone=(s.containers||[]).some(c=>{
+    const landM=c.contMilestones&&c.contMilestones.find(x=>x.stage==='landtransport');
+    return landM&&landM.status==='done';
+  });
+  if(anyContDone)return'landtransport';
+  const anyPickup=(s.containers||[]).some(c=>{
+    const pM=c.contMilestones&&c.contMilestones.find(x=>x.stage==='pickup');
+    return pM&&pM.status==='done';
+  });
+  if(anyPickup)return'landtransport';
+  const release=ms.find(m=>m.stage==='release');
+  if(release&&release.status==='done')return'released';
+  const insp=ms.find(m=>m.stage==='declaration');
+  if(insp&&insp.status==='done')return'clearing';
+  if(ms.find(m=>m.stage==='arrival'&&m.status==='done'))return'at_port';
+  if(ms.find(m=>m.stage==='loading'&&m.status==='done'))return'in_transit';
+  return'in_transit';
+}
+
+// ============================================================
+// 应收节点生成
+// ============================================================
+function generatePaymentSchedule(customer,shipment){
+  if(!customer)return[];
+  const total=Number(shipment.declaredValue||0);if(!total)return[];
+  const terms=customer.paymentTerms||{type:'split'};
+  const today=new Date();
+  const etd=shipment.etd?new Date(shipment.etd):null;
+  const eta=shipment.eta?new Date(shipment.eta):null;
+  function dateOffset(base,days){const d=new Date(base||today);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
+  if(terms.type==='prepay')return[{name:'装船前付清',pt:'100% antes embarque',pct:100,amount:total,dueDate:etd?dateOffset(etd,-3):dateOffset(today,3),paid:false,paidDate:'',paidAmount:0,notes:''}];
+  if(terms.type==='split'){
+    const prepayPct=Number(terms.prepayPct||50);
+    return[
+      {name:`订舱金 ${prepayPct}%`,pt:`Adiantamento ${prepayPct}%`,pct:prepayPct,amount:total*prepayPct/100,dueDate:etd?dateOffset(etd,-7):dateOffset(today,3),paid:false,paidDate:'',paidAmount:0,notes:''},
+      {name:`提货前付清 ${100-prepayPct}%`,pt:`Restante ${100-prepayPct}%`,pct:100-prepayPct,amount:total*(100-prepayPct)/100,dueDate:eta?dateOffset(eta,1):dateOffset(today,30),paid:false,paidDate:'',paidAmount:0,notes:''}
+    ];
+  }
+  if(terms.type==='credit'){
+    const cd=Number(terms.creditDays||30);
+    return[{name:`月结${cd}天付清`,pt:`Crédito ${cd}d`,pct:100,amount:total,dueDate:eta?dateOffset(eta,cd):dateOffset(today,cd),paid:false,paidDate:'',paidAmount:0,notes:''}];
+  }
+  return[];
+}
+
+// ============================================================
+// 全局状态 + 初始化
+// ============================================================
+// 注意：data 在网络版启动时是空对象，启动后由底部 async IIFE 从服务器 fetch 覆盖
+let data={customers:[],shipments:[],activities:[],users:DEFAULT_USERS,settings:{lang:'zh'}};
+let currentShipmentId=null;
+let currentContainerId=null;
+let currentView='dashboard';
+// 指挥台点入产生的过滤标记（v3.0.11）：'active'|'portwarn'|'receivable'|'trippending'|'margin'|'deposit'，渲染完即清
+let dashboardJumpFilter=null;
+// 提单一览 ETA 日期范围筛选（v3.0.12）
+let shipEtaFilter={from:'',to:''};
+
+if(data.settings&&data.settings.lang){LANG=data.settings.lang;}
+
+function newCont(){
+  return {
+    id:uid(),containerNo:'',boxType:'40GP',weight:'',volume:'',
+    freeDays:21,actualArrivalDate:'',pickupDate:'',deliveryDate:'',currentStage:'booking',
+    contMilestones:CONT_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
+    containerDocs:CONT_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
+    containerCosts:[],landTransportRecords:[],
+    // 押金（v3.0.11）— 大部分柜为空，少数柜有押金
+    deposit:{amount:0,currency:'MZN',status:'none',collectedAt:'',refundedAt:'',
+      collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]}
+  };
+}
+function newShip(id,blNo,custId,productDesc,hsCode,declaredValue,vessel,voyage,etd,eta,originPort,destPort,notes,freeDays){
+  return {
+    id,blNo,customerId:custId,productDesc,hsCode,declaredValue,currency:'USD',originPort,destPort,vessel,voyage,etd,eta,freeDays:Number(freeDays||21),
+    shipMilestones:SHIP_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
+    sharedDocs:SHARED_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
+    sharedCosts:[],communications:[],containers:[],paymentSchedule:[],notes,
+    triplicadoDelivered:false,triplicadoDeliveredAt:'',triplicadoNote:'',
+    createdAt:nowISO(),updatedAt:nowISO()
+  };
+}
+
+// ============================================================
+// 演示数据 (loadDemoData)
+// ============================================================
+function loadDemoData(){
+  if(!isAdmin()){alert(t('admin_only_denied'));return;}
+  if(!confirm('清空现有数据并加载演示数据？'))return;
+  const customers=[
+    {id:'c1',name:'齐总',namePt:'Qi (CHICUMBANE Investimento)',type:'chinese_boss',wechat:'qi-chicumbane',phone:'+258 84 111 2222',address:'CHICUMBANE 投资区',business:'建材/投资',paymentTerms:{type:'credit',creditDays:30},creditScore:90,overdueCount:0,notes:'原表 CHICUMBANE INVESTIMENTOS, LDA',createdAt:'2025-01-10'},
+    {id:'c2',name:'老张',namePt:'Zhang (FLEXIVEL Plástico)',type:'chinese_boss',wechat:'zhang-plastico',phone:'+258 84 222 3333',address:'贝拉工业园',business:'塑料颗粒（免税）',paymentTerms:{type:'split',prepayPct:50},creditScore:85,overdueCount:0,notes:'原表 FLEXIVEL PLASTICA,LDA, 免税票',createdAt:'2025-03-15'},
+    {id:'c3',name:'索总',namePt:'Sol (Supermercado SOL)',type:'chinese_boss',wechat:'sol-supermarket',phone:'+258 84 333 4444',address:'贝拉中心区',business:'超市日用品',paymentTerms:{type:'prepay'},creditScore:98,overdueCount:0,notes:'原表 SUPERMERCADO SOL, LIMITADA',createdAt:'2025-02-20'},
+    {id:'c4',name:'吴总',namePt:'Wu (NEWSPEED Trading)',type:'chinese_boss',wechat:'newspeed-trade',phone:'+258 84 444 5555',address:'贝拉新城',business:'电子产品',paymentTerms:{type:'split',prepayPct:50},creditScore:88,overdueCount:0,notes:'原表 NEWSPEED INTERNATIONAL LIMITED',createdAt:'2025-04-05'},
+    {id:'c5',name:'林总',namePt:'Lin (Supermercado FELIZ BEIRA)',type:'chinese_boss',wechat:'feliz-beira',phone:'+258 84 555 6666',address:'贝拉 BEIRA 商业区',business:'超市百货',paymentTerms:{type:'credit',creditDays:30},creditScore:70,overdueCount:2,notes:'原表 SUPERMERCADO FELIZ SHOPPING/BEIRA',createdAt:'2025-05-12'},
+    {id:'c6',name:'米总',namePt:'Mi (Supermercado MIL)',type:'chinese_boss',wechat:'mil-supermarket',phone:'+258 84 666 7777',address:'贝拉 MIL 区',business:'超市小家电',paymentTerms:{type:'prepay'},creditScore:92,overdueCount:0,notes:'原表 SUPERMERCADO MIL, LIMITADA',createdAt:'2025-06-18'}
+  ];
+  const shipments=[];
+
+  // ====== sh1: 齐总 11 柜 - 已签收 ======
+  let sh=newShip('sh1','COSU6400060160','c1','建材钢材 + 五金配件','7308.30',128000,'COSCO SHIPPING UNIVERSE','CS2024-15W','2025-01-02','2025-01-18','Shanghai','Beira','原表第 14 行 11x20GP，已签收',21);
+  ['booking','loading','sea','arrival','declaration','release'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2024-12-28':k==='loading'?'2025-01-02':k==='sea'?'2025-01-18':k==='arrival'?'2025-01-19':k==='declaration'?'2025-01-22':'2025-01-25';});
+  ['invoice','packing','bl','co'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2025-01-05';});
+  // sh1 齐总：已签收且单据已交客户
+  sh.triplicadoDelivered=true;
+  sh.triplicadoDeliveredAt='2025-01-26T10:30:00.000Z';
+  sh.triplicadoNote='现场交给齐总本人，已签收';
+  sh.sharedCosts.push({type:'关税',amount:725000,currency:'MZN'},{type:'CIVA/IVA',amount:1040000,currency:'MZN'},{type:'代理费',amount:45000,currency:'MZN'});
+  ['CAXU6118993','NEXU1523118','TDRU2908010','TDRU3445645','TRLU9106829','TDRU3147229','TDRU3294220','TCKU3844095','TDRU0631100','TCKU2155717','TDRU3297810'].forEach((no,i)=>{
+    let ct=newCont();ct.containerNo=no;ct.boxType='20GP';ct.weight='22吨';ct.volume='28CBM';ct.freeDays=21;
+    ct.actualArrivalDate='2025-01-19';ct.pickupDate='2025-01-24';ct.deliveryDate='2025-01-26';
+    ct.contMilestones.forEach(m=>{m.status='done';m.actualDate=m.stage==='pickup'?'2025-01-24':m.stage==='landtransport'?'2025-01-25':'2025-01-26';});
+    ct.containerCosts.push({type:'提货费',amount:1200,currency:'MZN'},{type:'派送费',amount:3500,currency:'MZN'});
+    ct.landTransportRecords=[{id:uid(),plateNo:'MOC-AAA-111',driverName:'António',driverPhone:'+258 84 555 1234',destination:'CHICUMBANE 工地',fee:3500,currency:'MZN',scheduledDate:'2025-01-25',completedDate:'2025-01-26',notes:'11柜同一辆平板分两次拉'}];
+    // 押金示例 1：第一个柜已收 + 已退（全流程 4 个凭证位都填）
+    if(i===0){
+      ct.deposit={amount:8000,currency:'MZN',status:'refunded',collectedAt:'2025-01-19T08:00:00.000Z',refundedAt:'2025-02-20T14:30:00.000Z',
+        collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]};
+    }
+    sh.containers.push(ct);
+  });
+  shipments.push(sh);
+
+  // ====== sh2: 老张 7 柜免税 - 在港 20 天 ======
+  sh=newShip('sh2','XMN500126200','c2','PE 塑料颗粒 + 再生塑料膜（免税）','3901.10',86000,'PIL GUANGZHOU','PG2025-22E','2026-06-12','2026-06-22','Xiamen','Beira','原表第 133 行 7x40GP，在港 20 天',21);
+  ['booking','loading','sea','arrival','declaration','release'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-06-08':k==='loading'?'2026-06-12':k==='sea'?'2026-06-22':k==='arrival'?'2026-07-15':k==='declaration'?'2026-07-18':'2026-07-22';});
+  ['invoice','packing','bl','co'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-06-15';});
+  // sh2 老张：已放行但单据还没交（仓库说客户下周一取）
+  sh.sharedCosts.push({type:'关税',amount:0,currency:'MZN',notes:'免税'},{type:'CIVA/IVA',amount:0,currency:'MZN',notes:'免税'},{type:'代理费',amount:38000,currency:'MZN'});
+  ['PCIU9123217','PCIU9158825','PIDU4030578','UETU5981499','PIDU4214030','TCNU6202262','PIDU4114072'].forEach((no,i)=>{
+    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='26吨';ct.volume='58CBM';ct.freeDays=14;
+    ct.actualArrivalDate='2026-07-15';
+    ct.contMilestones.forEach(m=>{m.status='pending';});
+    ct.containerCosts.push({type:'仓储/滞港费',amount:6000,currency:'MZN',notes:`第${i+1}柜滞港`});
+    // 押金示例 2：第二个柜已收 5000 USD 未退（演示中间状态）
+    if(i===1){
+      ct.deposit={amount:5000,currency:'USD',status:'collected',collectedAt:'2026-07-22T10:00:00.000Z',refundedAt:'',
+        collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]};
+    }
+    sh.containers.push(ct);
+  });
+  shipments.push(sh);
+
+  // ====== sh3: 索总 3 柜 - 清关中 ======
+  sh=newShip('sh3','NGP2241850','c3','超市货架 + 日用品 + 食品','9403.20',52000,'CMA CGM JACQUES','CM2025-19E','2026-07-20','2026-07-30','Shanghai','Beira','原表第 91 行 3x40HQ，清关中',21);
+  ['booking','loading','sea','arrival','declaration'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-15':k==='loading'?'2026-07-20':k==='sea'?'2026-07-30':'2026-07-30';});
+  sh.shipMilestones.find(m=>m.stage==='declaration').notes='海关查验中';
+  ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-30';});
+  sh.sharedCosts.push({type:'关税',amount:340000,currency:'MZN'},{type:'CIVA/IVA',amount:498000,currency:'MZN'},{type:'代理费',amount:24000,currency:'MZN'});
+  ['TCLU1872916','UETU7183630','TRLU7120710'].forEach(no=>{
+    let ct=newCont();ct.containerNo=no;ct.boxType='40HQ';ct.weight='24吨';ct.volume='64CBM';ct.freeDays=21;
+    ct.actualArrivalDate='2026-07-30';
+    sh.containers.push(ct);
+  });
+  shipments.push(sh);
+
+  // ====== sh4: 吴总 2 柜 - 在港 ======
+  sh=newShip('sh4','COSU6411801900','c4','手机配件 + 电子产品','8517.62',38000,'COSCO SHIPPING','CS2025-15E','2026-07-10','2026-07-25','Shenzhen','Beira','原表第 87 行 2x40GP，在港',21);
+  ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-05':k==='loading'?'2026-07-10':'2026-07-26';});
+  ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-26';});
+  sh.sharedCosts.push({type:'关税',amount:218000,currency:'MZN'},{type:'CIVA/IVA',amount:312000,currency:'MZN'},{type:'代理费',amount:18000,currency:'MZN'});
+  ['CSNU7166077','CSNU6820352'].forEach(no=>{
+    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='22吨';ct.volume='54CBM';ct.freeDays=21;
+    ct.actualArrivalDate='2026-07-26';
+    sh.containers.push(ct);
+  });
+  shipments.push(sh);
+
+  // ====== sh5: 林总 1 柜 - 拖欠 ======
+  sh=newShip('sh5','TXSV51253400','c5','超市百货 + 食品 + 日化','4901.99',21000,'PIL HONG KONG','PH2026-31E','2026-07-12','2026-07-27','Shanghai','Beira','原表第 167 行 1x40GP，林总拖欠，月结到期未付',21);
+  ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-08':k==='loading'?'2026-07-12':k==='sea'?'2026-07-25':'2026-07-25';});
+  ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-25';});
+  sh.sharedCosts.push({type:'关税',amount:124000,currency:'MZN'},{type:'CIVA/IVA',amount:178000,currency:'MZN'},{type:'代理费',amount:12000,currency:'MZN'});
+  let ct5=newCont();ct5.containerNo='PIDU4122015';ct5.boxType='40GP';ct5.weight='22吨';ct5.volume='56CBM';ct5.freeDays=21;
+  ct5.actualArrivalDate='2026-07-25';
+  // sh5 没有陆运记录（演示"未提货→未陆运"）
+  sh.containers.push(ct5);
+  shipments.push(sh);
+
+  // ====== sh6: 米总 1 柜 - 在港 ======
+  sh=newShip('sh6','YIZC50228200','c6','超市日用品 + 小家电','8516.71',18500,'PIL KAOHSIUNG','PK2026-31E','2026-07-13','2026-07-28','Shanghai','Beira','原表第 170 行 1x40GP，米总在港待放行',21);
+  ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-09':k==='loading'?'2026-07-13':k==='sea'?'2026-07-28':'2026-07-28';});
+  ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-28';});
+  sh.sharedCosts.push({type:'关税',amount:108000,currency:'MZN'},{type:'CIVA/IVA',amount:155000,currency:'MZN'},{type:'代理费',amount:12000,currency:'MZN'});
+  let ct6=newCont();ct6.containerNo='PCIU9258172';ct6.boxType='40GP';ct6.weight='20吨';ct6.volume='52CBM';ct6.freeDays=21;
+  ct6.actualArrivalDate='2026-07-28';
+  sh.containers.push(ct6);
+  shipments.push(sh);
+
+  // ====== 生成应收节点 ======
+  shipments.forEach(s=>{
+    const cust=customers.find(x=>x.id===s.customerId);
+    s.paymentSchedule=generatePaymentSchedule(cust,s);
+  });
+  // sh1 已签收 → 全部已收
+  {let s=shipments[0];if(shipmentStatus(s)==='delivered'){s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2025-02-15';p.paidAmount=p.amount;});}}
+  // sh2 老张 50% 预付已收
+  {let s=shipments[1];if(s.paymentSchedule[0]){s.paymentSchedule[0].paid=true;s.paymentSchedule[0].paidDate='2026-06-10';s.paymentSchedule[0].paidAmount=s.paymentSchedule[0].amount;}}
+  // sh3 索总 全预付
+  {let s=shipments[2];s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2026-07-25';p.paidAmount=p.amount;});}
+  // sh4 吴总 50% 预付
+  {let s=shipments[3];if(s.paymentSchedule[0]){s.paymentSchedule[0].paid=true;s.paymentSchedule[0].paidDate='2026-07-08';s.paymentSchedule[0].paidAmount=s.paymentSchedule[0].amount;}}
+  // sh5 林总 拖欠 — 整票未付 + dueDate 已过期
+  {let s=shipments[4];s.paymentSchedule.forEach(p=>{p.paid=false;p.paidDate='';p.paidAmount=0;p.dueDate='2026-07-30';p.notes='林总历史拖欠 2 次，催了 3 次还没打款';});}
+  // sh6 米总 全预付
+  {let s=shipments[5];s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2026-07-20';p.paidAmount=p.amount;});}
+
+  data={customers,shipments,activities:[],users:DEFAULT_USERS,settings:{lang:LANG}};
+  saveData();
+  alert(t('set_demo_sub'));
+  navigate('dashboard');
+}
+
+// ============================================================
+// 登录 / 退出
+// ============================================================
+async function doLogin(){
+  const u=document.getElementById('login-username').value.trim();
+  const p=document.getElementById('login-password').value;
+  document.getElementById('login-err').style.display='none';
+  try{
+    const r=await fetch('/api/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    if(!r.ok) throw new Error('invalid');
+    const me=await r.json();
+    currentUser=me;
+    // 加载数据
+    const dR=await fetch('/api/data',{credentials:'include'});
+    if(!dR.ok) throw new Error('data_load_failed');
+    data=await dR.json();
+    if(!data.users) data.users=DEFAULT_USERS;
+    if(!data.settings) data.settings={lang:'zh'};
+    showApp();
+  }catch(e){
+    document.getElementById('login-err').style.display='block';
+  }
+}
+function logout(){
+  fetch('/api/logout',{method:'POST',credentials:'include'}).catch(()=>{});
+  currentUser=null;
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('app-header').style.display='none';
+  document.getElementById('app-layout').style.display='none';
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-err').style.display='none';
+}
+function showApp(){
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app-header').style.display='flex';
+  document.getElementById('app-layout').style.display='flex';
+  const badge=document.getElementById('user-role-badge');
+  badge.textContent=currentUser.role;
+  badge.className='role-badge '+currentUser.role;
+  document.getElementById('user-display').textContent=LANG==='pt'?currentUser.displayPt:currentUser.display;
+  // 按角色控制 admin-only 区域可见性（导入/演示/清空）
+  document.body.classList.toggle('role-admin',isAdmin());
+  document.body.classList.toggle('role-worker',!isAdmin());
+  // 应用双语
+  setLang(LANG);
+  navigate('dashboard');
+}
+
+// ============================================================
+// 导航
+// ============================================================
+function navigate(view,id){
+  currentView=view;
+  if(view==='shipment-detail'&&id)currentShipmentId=id;
+  if(view==='container-detail'&&id)currentContainerId=id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+view)?.classList.add('active');
+  document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
+  // 移动端关闭侧栏
+  document.getElementById('sidebar')?.classList.remove('open');
+  if(view==='dashboard')renderDashboard();
+  if(view==='customers')renderCustomers();
+  if(view==='customer-detail')renderCustomerDetail();
+  if(view==='shipments')renderShipments();
+  if(view==='shipment-detail')renderShipmentDetail();
+  if(view==='containers')renderContainers();
+  if(view==='container-detail')renderContainerDetail();
+  if(view==='settings'){}
+  renderCurrent=function(){navigate(currentView,currentShipmentId||currentContainerId);};
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+let renderCurrent=function(){navigate('dashboard');};
+
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>navigate(n.dataset.view)));
+document.querySelectorAll('.tabs .tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs .tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelectorAll('.pane').forEach(p=>p.style.display='none');
+  document.getElementById('pane-'+t.dataset.pane).style.display='block';
+}));
+
+// ============================================================
+// 指挥台
+// ============================================================
+function renderDashboard(){
+  const customers=data.customers||[];
+  const shipments=data.shipments||[];
+  const month=new Date().toISOString().slice(0,7);
+  const allContainers=[];shipments.forEach(s=>(s.containers||[]).forEach(c=>allContainers.push({...c,shipment:s})));
+  const activeShip=shipments.filter(s=>shipmentStatus(s)!=='delivered');
+  const doneShip=shipments.filter(s=>shipmentStatus(s)==='delivered');
+  document.getElementById('kpi-shipment').textContent=`${activeShip.length} / ${allContainers.filter(c=>shipmentStatus(c.shipment)!=='delivered').length}`;
+  document.getElementById('kpi-shipment-sub').textContent=`${t('st_in_transit')} ${activeShip.length} · ${t('st_delivered')} ${doneShip.length}`;
+  // 滞港预警：剩余≤3 或 已超期
+  let warnCount=0;allContainers.forEach(c=>{const p=portDaysClass(c);if(p&&(p.c==='warn'||p.c==='over'||p.c==='critical'))warnCount++;});
+  document.getElementById('kpi-overdue-port').textContent=warnCount;
+  // 应收未收
+  let totalRecv=0,overdueNodes=0;
+  shipments.forEach(s=>{(s.paymentSchedule||[]).forEach(p=>{if(!p.paid){totalRecv+=Number(p.amount||0);if(p.dueDate&&new Date(p.dueDate)<new Date())overdueNodes++;}});});
+  document.getElementById('kpi-receivable').textContent=fmtMoney(totalRecv);
+  document.getElementById('kpi-receivable-sub').textContent=overdueNodes+' '+t('th_node')+' '+t('dash_overdue').toLowerCase();
+  // 待交客户单据（Triplicado）— 只算已"放行/陆运/完结"但单据还没交的
+  const tripPending=shipments.filter(s=>!s.triplicadoDelivered&&['released','landtransport','delivered'].includes(shipmentStatus(s))).length;
+  document.getElementById('kpi-trip-pending').textContent=tripPending;
+  document.getElementById('kpi-trip-pending-sub').textContent=tripPending?t('trip_pending_hint').slice(0,30):t('kpi_trip_sub');
+  // 毛利
+  const monthMargin=shipments.filter(s=>s.deliveryDate&&(s.deliveryDate||'').startsWith(month)||shipmentStatus(s)==='delivered').reduce((sum,s)=>sum+shipmentTotals(s).margin,0);
+  document.getElementById('kpi-margin').textContent=canSeeIncome()?fmtMoney(monthMargin):mask(monthMargin);
+  // 未退押金（v3.0.11）— 已收客户但还没退的柜子，按币种汇总
+  const pendingDeposits=allContainers.filter(c=>c.deposit&&c.deposit.status==='collected');
+  let depMZN=0,depUSD=0;
+  pendingDeposits.forEach(c=>{
+    const a=Number(c.deposit.amount||0);
+    if(c.deposit.currency==='USD')depUSD+=a;else depMZN+=a;
+  });
+  const depLabel = pendingDeposits.length
+    ? (depUSD?`${fmtMoney(depMZN,'MZN')} + ${fmtMoney(depUSD,'USD')}`:`${fmtMoney(depMZN,'MZN')}`)
+    : t('kpi_deposit_sub');
+  document.getElementById('kpi-deposit').textContent=pendingDeposits.length;
+  // 提单一览
+  const tbl=document.querySelector('#dash-shipment-table tbody');
+  const sts=getMS('dash-status-ms');
+  const sorted=[...shipments].filter(s=>!sts.length||sts.includes(shipmentStatus(s))).sort((a,b)=>(a.eta||'').localeCompare(b.eta||''));
+  tbl.innerHTML=sorted.map(s=>{
+    const cust=customers.find(c=>c.id===s.customerId);
+    const tot=shipmentTotals(s);
+    const portCell=s.containers[0]?(function(){const p=portDaysClass(s.containers[0]);if(!p)return'<td class="center">-</td>';return `<td class="center"><span class="port-days ${p.c}">${p.label}</span></td>`;})():'<td class="center">-</td>';
+    const tripChip=s.triplicadoDelivered?'<span class="chip s-success" title="'+fmtDateTime(s.triplicadoDeliveredAt)+'">✅</span>':'<span class="chip s-warning" title="'+t('trip_status_pending')+'">⏳</span>';
+    return `<tr onclick="if(!event.target.closest('a,button'))navigate('shipment-detail','${s.id}')">
+      <td><a href="#" onclick="navigate('shipment-detail','${s.id}');return false;" style="color:var(--primary-dark);font-weight:600;">${s.blNo}</a></td>
+      <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${s.customerId}')">${cust?cust.name:'-'}</a></td>
+      <td><span class="muted" style="font-size:11.5px;">${s.productDesc||''}</span></td>
+      <td class="center">${(s.containers||[]).length}</td>
+      <td class="center"><span class="chip ${STATUS_CLASS[shipmentStatus(s)]}">${t('st_'+shipmentStatus(s))}</span></td>
+      <td class="center">${tripChip}</td>
+      <td class="nowrap">${fmtDate(s.eta)}</td>
+      ${portCell}
+      <td class="num">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</td>
+      <td class="num green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</td>
+      <td class="num ${tot.margin<0?'red':'green'}">${canSeeIncome()?fmtMoney(tot.margin):mask(tot.margin)}</td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">查看</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="12" class="empty">${t('empty_dash_shipments')}</td></tr>`;
+  // 欠款表
+  const oTbl=document.querySelector('#dash-overdue-table tbody');
+  const overdueList=[];
+  shipments.forEach(s=>{(s.paymentSchedule||[]).forEach(p=>{
+    if(!p.paid&&p.dueDate){
+      overdueList.push({ship:s,node:p});
+    }
+  });});
+  oTbl.innerHTML=overdueList.slice(0,20).map(({ship,node})=>{
+    const cust=customers.find(c=>c.id===ship.customerId);
+    const isOver=node.dueDate&&new Date(node.dueDate)<new Date();
+    return `<tr class="${isOver?'overdue':''}" onclick="if(!event.target.closest('a,button'))navigate('shipment-detail','${ship.id}')">
+      <td><a href="#" onclick="navigate('shipment-detail','${ship.id}');return false;" style="color:var(--primary-dark);">${ship.blNo}</a></td>
+      <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${ship.customerId}')">${cust?cust.name:'-'}</a></td>
+      <td>${node.name}</td>
+      <td class="num">${canSeeIncome()?fmtMoney(node.amount):mask(node.amount)}</td>
+      <td class="nowrap">${fmtDate(node.dueDate)}</td>
+      <td class="nowrap">${isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未付</span>'}</td>
+      <td class="center"><button class="btn sm" onclick="event.stopPropagation();copyReminder('${ship.id}')" data-i18n="btn_copy_reminder">催款话术</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="7" class="empty">${t('empty_dash_receivables')}</td></tr>`;
+  // 顶部导航计数
+  document.getElementById('nav-customer-count').textContent=customers.length;
+  document.getElementById('nav-shipment-count').textContent=shipments.length;
+  document.getElementById('nav-container-count').textContent=allContainers.length;
+  document.getElementById('nav-issue-count').textContent=warnCount+overdueNodes+tripPending||'';
+  document.getElementById('nav-issue-count').parentElement.classList.toggle('has-issue',(warnCount+overdueNodes+tripPending)>0);
+}
+
+// ============================================================
+// 指挥台点入（v3.0.11）
+// ============================================================
+function jumpFromKpi(target){
+  dashboardJumpFilter = target;
+  if (['active','receivable','trippending','margin'].includes(target)) navigate('shipments');
+  else navigate('containers');
+}
+function jumpToCustomer(custId){
+  currentCustomerId = custId;
+  navigate('customer-detail');
+}
+function clearJumpFilter(){
+  dashboardJumpFilter = null;
+  renderCurrent();
+}
+function renderJumpBanner(view){
+  if (!dashboardJumpFilter) { document.getElementById('jump-banner')?.remove(); return; }
+  const labels = {
+    active: t('filter_label_active'),
+    portwarn: t('filter_label_portwarn'),
+    receivable: t('filter_label_receivable'),
+    trippending: t('filter_label_trippending'),
+    margin: t('filter_label_margin'),
+    deposit: t('filter_label_deposit'),
+  };
+  let el = document.getElementById('jump-banner');
+  if (!el){
+    el = document.createElement('div');
+    el.id = 'jump-banner';
+    el.className = 'jump-banner';
+    const viewEl = document.getElementById('view-'+view);
+    if (viewEl) viewEl.querySelector('.page-header')?.after(el);
+  }
+  el.innerHTML = `<span>${t('filter_jump_label')}${labels[dashboardJumpFilter]||''}</span><button class="btn sm ghost" onclick="clearJumpFilter()">${t('filter_jump_clear')}</button>`;
+}
+
+// ============================================================
+// 催款话术
+// ============================================================
+function copyReminder(shipId){
+  const s=data.shipments.find(x=>x.id===shipId);if(!s)return;
+  const cust=data.customers.find(c=>c.id===s.customerId);
+  const overdueNodes=(s.paymentSchedule||[]).filter(p=>!p.paid&&p.dueDate);
+  const overdue=overdueNodes[0];
+  if(!overdue)return;
+  const days=overdue.dueDate?Math.floor((new Date()-new Date(overdue.dueDate))/86400000):0;
+  const msg=`${cust.name}总：
+
+BL ${s.blNo} 的 "${overdue.name}" ${fmtMoney(overdue.amount)} ${days>0?`已经逾期 ${days} 天了`:'快到期了'}，麻烦核对一下尽快安排。
+
+催一下，BEIRA 港的免费期就快到了，超期一天的仓储费也不少。
+
+如已付款请忽略，谢谢！
+
+— Beira 清关`;
+  navigator.clipboard.writeText(msg).then(()=>alert(t('copy_reminder_done')+msg),()=>alert(msg));
+}
+
+// ============================================================
+// 客户档案
+// ============================================================
+function renderCustomers(){
+  const customers=data.customers||[];
+  const kw=document.getElementById('cust-search').value.toLowerCase();
+  const tbl=document.querySelector('#customer-table tbody');
+  const filtered=customers.filter(c=>!kw||(c.name||'').toLowerCase().includes(kw)||(c.wechat||'').toLowerCase().includes(kw)||(c.business||'').toLowerCase().includes(kw));
+  tbl.innerHTML=filtered.map(c=>{
+    const cnt=(data.shipments||[]).filter(s=>s.customerId===c.id).length;
+    const debt=(data.shipments||[]).filter(s=>s.customerId===c.id).reduce((sum,s)=>sum+(s.paymentSchedule||[]).filter(p=>!p.paid).reduce((a,p)=>a+p.amount,0),0);
+    const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
+    return `<tr onclick="if(!event.target.closest('button')){currentCustomerId='${c.id}';navigate('customer-detail')}">
+      <td><strong style="color:var(--primary-dark);cursor:pointer;">${c.name}</strong><span class="pt-tag">${c.namePt||''}</span></td>
+      <td>${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')}</td>
+      <td><span class="muted" style="font-size:11.5px;">${c.business||''}</span></td>
+      <td class="center">${termsLabel}</td>
+      <td class="center"><span class="${c.creditScore<80?'red':''}">${c.creditScore}</span></td>
+      <td class="center">${cnt}</td>
+      <td class="num ${debt>0?'red':'muted'}">${canSeeIncome()?fmtMoney(debt):mask(debt)}</td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();openCustomerModal('${c.id}')">编辑</button> <button class="btn sm danger" onclick="event.stopPropagation();deleteCustomer('${c.id}')">删</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" class="empty">${t('empty_customers')}</td></tr>`;
+}
+
+// 客户详情（v3.0.11）
+function renderCustomerDetail(){
+  const c=data.customers?.find(x=>x.id===currentCustomerId);
+  if(!c){navigate('customers');return;}
+  const ships=(data.shipments||[]).filter(s=>s.customerId===c.id);
+  const conts=[];ships.forEach(s=>(s.containers||[]).forEach(ct=>conts.push({...ct,shipment:s})));
+  const depPending=conts.filter(ct=>ct.deposit&&ct.deposit.status==='collected').length;
+  const debt=ships.reduce((sum,s)=>sum+(s.paymentSchedule||[]).filter(p=>!p.paid).reduce((a,p)=>a+p.amount,0),0);
+  const revenue=ships.reduce((sum,s)=>{
+    const tot=shipmentTotals(s);return sum+(tot.received||0);
+  },0);
+  const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
+  document.getElementById('custd-title').textContent=c.name||'';
+  document.getElementById('custd-sub').textContent=`${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')} · ${c.business||'-'}`;
+  document.getElementById('custd-edit-btn').onclick=()=>openCustomerModal(c.id);
+  document.getElementById('custd-base').innerHTML=`
+    <div class="detail-row"><div class="k">${t('th_name')}</div><div class="v">${c.name||'-'} <span class="pt-tag">${c.namePt||''}</span></div></div>
+    <div class="detail-row"><div class="k">${t('th_type')}</div><div class="v">${t(c.type==='chinese_boss'?'ct_boss':'ct_individual')}</div></div>
+    <div class="detail-row"><div class="k">${t('th_biz')}</div><div class="v">${c.business||'-'}</div></div>
+    <div class="detail-row"><div class="k">${t('th_terms')}</div><div class="v">${termsLabel}</div></div>
+    <div class="detail-row"><div class="k">微信</div><div class="v">${c.wechat||'-'}</div></div>
+    <div class="detail-row"><div class="k">电话</div><div class="v">${c.phone||'-'}</div></div>
+    <div class="detail-row"><div class="k">地址</div><div class="v">${c.address||'-'}</div></div>
+    <div class="detail-row"><div class="k">${t('notes')||'备注'}</div><div class="v">${c.notes||'-'}</div></div>
+  `;
+  document.getElementById('custd-summary').innerHTML=`
+    <div class="detail-row"><div class="k">${t('th_cnt')} / ${t('cnt')}</div><div class="v">${ships.length} 提单 / ${conts.length} 柜</div></div>
+    <div class="detail-row"><div class="k">${t('th_credit')}</div><div class="v"><span class="${c.creditScore<80?'red':''}">${c.creditScore||0}</span> · 历史拖欠 ${c.overdueCount||0} 次</div></div>
+    <div class="detail-row"><div class="k">${t('th_debt')}</div><div class="v ${debt>0?'red':''}">${canSeeIncome()?fmtMoney(debt):mask(debt)}</div></div>
+    <div class="detail-row"><div class="k">累计实收</div><div class="v green">${canSeeIncome()?fmtMoney(revenue):mask(revenue)}</div></div>
+    <div class="detail-row"><div class="k">${t('deposit_filter_pending')}</div><div class="v ${depPending>0?'warning':''}">${depPending} 个柜</div></div>
+  `;
+  document.getElementById('custd-ship-title').textContent=`${c.name||''} 的提单 (${ships.length})`;
+  document.getElementById('custd-shipments').innerHTML= ships.length?`
+    <table class="tbl"><thead><tr><th data-i18n="th_bl">提单号</th><th data-i18n="th_product">商品</th><th class="center" data-i18n="th_cnt">柜</th><th class="center" data-i18n="th_status">状态</th><th data-i18n="th_eta">ETA</th><th class="num" data-i18n="th_recv">应收</th></tr></thead><tbody>
+    ${ships.map(s=>{
+      const tot=shipmentTotals(s);
+      const st=shipmentStatus(s);
+      return `<tr onclick="currentShipmentId='${s.id}';navigate('shipment-detail','${s.id}')" style="cursor:pointer;">
+        <td><strong style="color:var(--primary-dark);">${s.blNo}</strong></td>
+        <td><span class="muted" style="font-size:11.5px;">${s.productDesc||''}</span></td>
+        <td class="center">${(s.containers||[]).length}</td>
+        <td class="center"><span class="chip ${STATUS_CLASS[st]}">${t('st_'+st)}</span></td>
+        <td>${fmtDate(s.eta)}</td>
+        <td class="num">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>
+  `:`<div class="empty">${t('empty_customer_shipments')}</div>`;
+}
+
+// ============================================================
+// 提单档案
+// ============================================================
+function renderShipments(){
+  const customers=data.customers||[];
+  const shipments=data.shipments||[];
+  const kw=document.getElementById('ship-search').value.toLowerCase();
+  const sts=getMS('ship-status-ms');
+  const cf=document.getElementById('ship-customer-filter').value;
+  const custSel=document.getElementById('ship-customer-filter');
+  custSel.innerHTML='<option value="">'+t('filter_all_cust')+'</option>'+customers.map(c=>`<option value="${c.id}" ${cf===c.id?'selected':''}>${c.name}</option>`).join('');
+  let filtered=shipments.filter(s=>{
+    if(sts.length&&!sts.includes(shipmentStatus(s)))return false;
+    if(cf&&s.customerId!==cf)return false;
+    if(kw){
+      const inBl=(s.blNo||'').toLowerCase().includes(kw);
+      const inProd=(s.productDesc||'').toLowerCase().includes(kw);
+      const inHs=(s.hsCode||'').toLowerCase().includes(kw);
+      const inCont=(s.containers||[]).some(c=>(c.containerNo||'').toLowerCase().includes(kw));
+      if(!(inBl||inProd||inHs||inCont))return false;
+    }
+    // ETA 日期范围筛选（v3.0.12）：from/to 都是 YYYY-MM-DD 字符串字典序可比较
+    if((shipEtaFilter.from||shipEtaFilter.to)&&s.eta){
+      if(shipEtaFilter.from&&s.eta<shipEtaFilter.from)return false;
+      if(shipEtaFilter.to&&s.eta>shipEtaFilter.to)return false;
+    }else if((shipEtaFilter.from||shipEtaFilter.to)&&!s.eta){
+      return false; // 设了日期范围但该提单无 ETA，排除
+    }
+    return true;
+  });
+  // 指挥台点入的额外过滤（v3.0.11）
+  if (dashboardJumpFilter==='active') filtered=filtered.filter(s=>shipmentStatus(s)!=='delivered');
+  else if (dashboardJumpFilter==='receivable') filtered=filtered.filter(s=>(s.paymentSchedule||[]).some(p=>!p.paid));
+  else if (dashboardJumpFilter==='trippending') filtered=filtered.filter(s=>!s.triplicadoDelivered&&['released','landtransport','delivered'].includes(shipmentStatus(s)));
+  else if (dashboardJumpFilter==='margin') filtered=filtered.filter(s=>shipmentStatus(s)==='delivered');
+
+  const tbl=document.querySelector('#shipment-table tbody');
+  tbl.innerHTML=filtered.map(s=>{
+    const cust=customers.find(c=>c.id===s.customerId);
+    const tripChip=s.triplicadoDelivered?'<span class="chip s-success" title="'+fmtDateTime(s.triplicadoDeliveredAt)+'">✅ '+t('trip_status_done').replace('✅ ','')+'</span>':'<span class="chip s-warning">⏳ '+t('trip_status_pending').replace('⏳ ','')+'</span>';
+    return `<tr onclick="if(!event.target.closest('a,button'))navigate('shipment-detail','${s.id}')">
+      <td><a href="#" onclick="navigate('shipment-detail','${s.id}');return false;" style="color:var(--primary-dark);font-weight:600;">${s.blNo}</a></td>
+      <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${s.customerId}')">${cust?cust.name:'-'}</a></td>
+      <td><span class="muted" style="font-size:11.5px;">${s.productDesc||''}</span></td>
+      <td class="nowrap muted">${s.hsCode||''}</td>
+      <td class="muted">${s.originPort||''} → ${s.destPort||''}</td>
+      <td class="center">${(s.containers||[]).length}</td>
+      <td class="center"><span class="chip ${STATUS_CLASS[shipmentStatus(s)]}">${t('st_'+shipmentStatus(s))}</span></td>
+      <td class="center">${tripChip}</td>
+      <td class="nowrap">${s.triplicadoDelivered?fmtDate(s.triplicadoDeliveredAt):'<span class="muted">-</span>'}</td>
+      <td class="nowrap">${fmtDate(s.eta)}</td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">查看</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="11" class="empty">${t(dashboardJumpFilter?'empty_shipments_filtered':'empty_shipments')}</td></tr>`;
+  renderJumpBanner('shipments');
+}
+
+// 提单一览 ETA 日期范围筛选（v3.0.12）
+function onShipEtaChange(){
+  shipEtaFilter.from=document.getElementById('ship-eta-from').value;
+  shipEtaFilter.to=document.getElementById('ship-eta-to').value;
+  const clr=document.getElementById('ship-eta-clear-btn');
+  if(clr)clr.hidden=!(shipEtaFilter.from||shipEtaFilter.to);
+  if(currentView==='shipments')renderShipments();
+}
+function clearShipEta(){
+  shipEtaFilter={from:'',to:''};
+  const fEl=document.getElementById('ship-eta-from'),tEl=document.getElementById('ship-eta-to');
+  if(fEl)fEl.value='';
+  if(tEl)tEl.value='';
+  const clr=document.getElementById('ship-eta-clear-btn');
+  if(clr)clr.hidden=true;
+  if(currentView==='shipments')renderShipments();
+}
+
+// ============================================================
+// 提单详情
+// ============================================================
+function renderShipmentDetail(){
+  const s=data.shipments.find(x=>x.id===currentShipmentId);if(!s){navigate('shipments');return;}
+  const cust=data.customers.find(c=>c.id===s.customerId);
+  const tot=shipmentTotals(s);
+  const status=shipmentStatus(s);
+  document.getElementById('detail-title').textContent=`${s.blNo}`;
+  document.getElementById('detail-sub').textContent=`${cust?cust.name:'-'} · ${(s.containers||[]).length} ${t('cnt')} · ${t('st_'+status)}`;
+  // 基本信息
+  document.getElementById('detail-base').innerHTML=`
+    <div class="detail-row"><div class="k">提单号</div><div class="v">${s.blNo}</div></div>
+    <div class="detail-row"><div class="k">客户</div><div class="v">${cust?cust.name:'-'} <span class="pt-tag">${cust?.namePt||''}</span></div></div>
+    <div class="detail-row"><div class="k">商品</div><div class="v">${s.productDesc||'-'}</div></div>
+    <div class="detail-row"><div class="k">HS</div><div class="v">${s.hsCode||'-'}</div></div>
+    <div class="detail-row"><div class="k">货值</div><div class="v">${canSeeIncome()?fmtMoney(s.declaredValue,s.currency):mask(s.declaredValue)}</div></div>
+    <div class="detail-row"><div class="k">船名航次</div><div class="v">${s.vessel||''} ${s.voyage||''}</div></div>
+    <div class="detail-row"><div class="k">起运→目的</div><div class="v">${s.originPort||''} → ${s.destPort||''}</div></div>
+    <div class="detail-row"><div class="k">ETD / ETA</div><div class="v">${fmtDate(s.etd)} → ${fmtDate(s.eta)}</div></div>
+    <div class="detail-row"><div class="k">默认免费期</div><div class="v">${s.freeDays||21} 天</div></div>
+    <div class="detail-row"><div class="k">备注</div><div class="v">${s.notes||'-'}</div></div>
+  `;
+  document.getElementById('detail-summary').innerHTML=`
+    <div class="detail-row"><div class="k">状态</div><div class="v"><span class="chip ${STATUS_CLASS[status]}">${t('st_'+status)}</span></div></div>
+    <div class="detail-row"><div class="k">应收</div><div class="v">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</div></div>
+    <div class="detail-row"><div class="k">实收</div><div class="v green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</div></div>
+    <div class="detail-row"><div class="k">整票成本</div><div class="v">${fmtMoney(tot.sharedCost,'MZN')}</div></div>
+    <div class="detail-row"><div class="k">按柜成本</div><div class="v">${fmtMoney(tot.contCost+tot.landCost,'MZN')}</div></div>
+    <div class="detail-row"><div class="k">毛利</div><div class="v ${tot.margin<0?'red':'green'}"><strong>${canSeeIncome()?fmtMoney(tot.margin):mask(tot.margin)}</strong></div></div>
+  `;
+  // 柜子列表
+  document.getElementById('detail-containers').innerHTML=(s.containers||[]).map(c=>{
+    const p=portDaysClass(c);
+    const landCnt=(c.landTransportRecords||[]).length;
+    return `<div class="container-card" onclick="currentContainerId='${c.id}';navigate('container-detail','${c.id}')">
+      <div class="no">${c.containerNo||'(无柜号)'}</div>
+      <div class="meta">${c.boxType||''} · ${c.weight||'-'} · ${c.volume||'-'} · ${landCnt>0?landCnt+' 陆运':'-'}</div>
+      <div>${p?`<span class="port-days ${p.c}">${p.label}</span>`:''}</div>
+      <div class="meta">${fmtDate(c.actualArrivalDate)||''}</div>
+    </div>`;
+  }).join('')||`<div class="empty">${t('empty_shipment_containers')}</div>`;
+
+  // ====== Tab 1: 单证 ======
+  document.getElementById('pane-docs').innerHTML=`
+    <div class="form-section">提单级共享单证（每个提单只填一次）</div>
+    ${SHARED_DOC_TYPES.map(d=>{
+      const doc=s.sharedDocs.find(x=>x.docType===d.key);
+      return `<div class="ps-node">
+        <div class="name">${t('doc_'+d.key)}<small>${d.pt||''}</small></div>
+        <select onchange="updateDocStatus('${s.id}','${d.key}',this.value)">
+          <option value="pending" ${doc.status==='pending'?'selected':''}>${t('st_at_port')==='在港'?'未到':'Pendente'}</option>
+          <option value="received" ${doc.status==='received'?'selected':''}>已收到 / Recebido</option>
+        </select>
+        ${doc.status==='received'?`<span class="muted">${fmtDate(doc.receivedDate)}</span>`:''}
+      </div>`;
+    }).join('')}
+    <div class="form-section" style="margin-top:14px;">各柜独立单证（如 ICR 验车 / 铅封）</div>
+    ${(s.containers||[]).map(c=>`<div style="margin-bottom:10px;"><strong>${c.containerNo}</strong> ${CONT_DOC_TYPES.map(d=>{
+      const doc=c.containerDocs.find(x=>x.docType===d.key);
+      return `<span style="margin-left:8px;font-size:12px;">${t('doc_'+d.key)}: ${doc.status==='received'?'✅':'⏳'}</span>`;
+    }).join('')}</div>`).join('')||'<div class="muted">无柜子</div>'}
+  `;
+
+  // ====== Tab 2: 应收 ======
+  document.getElementById('pane-payment').innerHTML=`
+    <div class="form-section">应收节点（按客户付款条款自动生成）</div>
+    ${(s.paymentSchedule||[]).map((p,i)=>{
+      const isOver=p.dueDate&&new Date(p.dueDate)<new Date()&&!p.paid;
+      return `<div class="ps-node ${isOver?'overdue':''} ${p.paid?'paid':''}">
+        <div class="name">${p.name}<small>${p.pt||''}</small></div>
+        <div class="num"><strong>${canSeeIncome()?fmtMoney(p.amount):mask(p.amount)}</strong></div>
+        <div class="muted nowrap">到期 ${fmtDate(p.dueDate)}</div>
+        <div>${p.paid?'<span class="chip s-success">已收</span>':isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未收</span>'}</div>
+        ${!p.paid?`<button class="btn sm" onclick="markPaid('${s.id}',${i})">标已收</button>`:`<span class="muted" style="font-size:11px;">${fmtDate(p.paidDate)}</span>`}
+        <button class="btn sm" onclick="copyReminder('${s.id}')">催款</button>
+      </div>`;
+    }).join('')||'<div class="muted">无应收节点</div>'}
+    <div style="margin-top:12px;"><button class="btn primary sm" onclick="addPaymentNode('${s.id}')">+ 添加应收节点</button></div>
+  `;
+
+  // ====== Tab 3: 成本/毛利 ======
+  const showIncome=canSeeIncome();
+  document.getElementById('pane-costs').innerHTML=`
+    <div class="form-section">整票成本（关税/CIVA/代理费/查验费等）</div>
+    ${(s.sharedCosts||[]).map((c,i)=>`<div class="ps-node"><div class="name">${c.type}</div><div class="num"><strong>${fmtMoney(c.amount,c.currency)}</strong></div><div class="muted">${c.notes||''}</div><button class="btn sm danger" onclick="removeSharedCost('${s.id}',${i})">删</button></div>`).join('')||'<div class="muted">无整票成本</div>'}
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+      <select id="new-sc-type">${SHARED_COST_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+      <input id="new-sc-amt" type="number" placeholder="金额" style="width:120px;" />
+      <input id="new-sc-notes" placeholder="备注" style="flex:1;min-width:120px;" />
+      <button class="btn primary sm" onclick="addSharedCost('${s.id}')">+ 加</button>
+    </div>
+    <div class="form-section" style="margin-top:14px;">按柜成本（提货/派送/滞港费/陆运费等）</div>
+    ${(s.containers||[]).map(c=>`
+      <div style="margin-bottom:10px;border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:600;margin-bottom:5px;">${c.containerNo} · ${c.boxType}</div>
+        ${(c.containerCosts||[]).map((cc,i)=>`<div class="ps-node" style="background:var(--bg);"><div class="name">${cc.type}</div><div class="num"><strong>${fmtMoney(cc.amount,cc.currency)}</strong></div><div class="muted">${cc.notes||''}</div><button class="btn sm danger" onclick="removeContCost('${s.id}','${c.id}',${i})">删</button></div>`).join('')||'<div class="muted" style="font-size:12px;">无按柜成本</div>'}
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+          <select id="cc-type-${c.id}">${CONT_COST_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+          <input id="cc-amt-${c.id}" type="number" placeholder="金额" style="width:100px;" />
+          <button class="btn primary sm" onclick="addContCost('${s.id}','${c.id}')">+ 加</button>
+        </div>
+      </div>
+    `).join('')||'<div class="muted">无柜子</div>'}
+    <div class="form-section" style="margin-top:14px;">
+      <strong>${showIncome?`毛利 = 实收 ${fmtMoney(tot.received)} - 总成本 ${fmtMoney(tot.totalCost)} = <span class="${tot.margin<0?'red':'green'}">${fmtMoney(tot.margin)}</span>`:mask(tot.margin)+' '+t('hidden_admin')}</strong>
+    </div>
+  `;
+
+  // ====== Tab 4: 流程节点（8 阶段） ======
+  document.getElementById('pane-milestones').innerHTML=`
+    <div class="form-section">提单阶段（前 5 阶段，整票共享）</div>
+    <div class="timeline">
+      ${SHIP_STAGES.map(st=>{
+        const m=s.shipMilestones.find(x=>x.stage===st.key);
+        const cls=m.status==='done'?'done':(m.status==='progress'?'progress':m.status==='warn'?'warn':'');
+        return `<div class="tl-item ${cls}">
+          <div class="tl-dot">${m.status==='done'?'✓':m.status==='progress'?String(SHIP_STAGES.indexOf(st)+1):'·'}</div>
+          <div class="tl-content">
+            <div class="title">${t('ms_'+st.key)}<small>${st.pt}</small></div>
+            <div class="meta">${m.actualDate?'完成 '+fmtDate(m.actualDate):'未开始'} · ${m.notes||''}</div>
+            <div style="margin-top:4px;">
+              <button class="btn sm" onclick="setMilestone('${s.id}','${st.key}','done')">完成</button>
+              <button class="btn sm ghost" onclick="setMilestone('${s.id}','${st.key}','progress')">进行中</button>
+              <button class="btn sm ghost" onclick="setMilestone('${s.id}','${st.key}','pending')">重置</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="form-section" style="margin-top:14px;">柜阶段（后 3 阶段，每个柜独立）</div>
+    ${(s.containers||[]).map(c=>`
+      <div style="margin-bottom:10px;border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:600;margin-bottom:5px;">${c.containerNo} · ${c.boxType}</div>
+        <div class="timeline">
+          ${CONT_STAGES.map(st=>{
+            const m=c.contMilestones.find(x=>x.stage===st.key);
+            const cls=m.status==='done'?'done':m.status==='progress'?'progress':'';
+            return `<div class="tl-item ${cls}">
+              <div class="tl-dot">${m.status==='done'?'✓':m.status==='progress'?String(CONT_STAGES.indexOf(st)+1):'·'}</div>
+              <div class="tl-content">
+                <div class="title">${t('ms_'+st.key)}<small>${st.pt}</small></div>
+                <div class="meta">${m.actualDate?'完成 '+fmtDate(m.actualDate):'未开始'} · ${m.notes||''}</div>
+                <div style="margin-top:4px;">
+                  <button class="btn sm" onclick="setContMilestone('${s.id}','${c.id}','${st.key}','done')">完成</button>
+                  <button class="btn sm ghost" onclick="setContMilestone('${s.id}','${c.id}','${st.key}','progress')">进行中</button>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `).join('')||'<div class="muted">无柜子</div>'}
+  `;
+
+  // ====== Tab 5: 沟通记录 ======
+  document.getElementById('pane-comms').innerHTML=`
+    <div class="form-section">沟通记录</div>
+    ${(s.communications||[]).map(c=>`<div class="ps-node"><div class="name"><strong>${fmtDateTime(c.date)}</strong> · ${c.by||'-'}<br><span style="font-size:12.5px;">${c.content||''}</span></div></div>`).join('')||`<div class="muted">${t('empty_comms')}</div>`}
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <input id="comm-content" placeholder="记一条沟通..." style="flex:1;" />
+      <button class="btn primary sm" onclick="addComm('${s.id}')">+ 记</button>
+    </div>
+  `;
+
+  // ====== Tab 6: 客户清关单 (Triplicado) ======
+  const tripDone=!!s.triplicadoDelivered;
+  document.getElementById('pane-triplicado').innerHTML=`
+    <div class="form-section">${t('trip_title')}</div>
+    <div class="detail-row" style="align-items:flex-start;">
+      <div class="k">当前状态</div>
+      <div class="v">
+        ${tripDone
+          ? `<span class="chip s-success">${t('trip_status_done')}</span>
+             <span style="margin-left:8px;color:var(--text-muted);font-size:12.5px;">
+               ${t('trip_delivered_at')}：<strong>${fmtDateTime(s.triplicadoDeliveredAt)}</strong>
+             </span>`
+          : `<span class="chip s-warning">${t('trip_status_pending')}</span>
+             <div style="margin-top:6px;color:var(--text-muted);font-size:12.5px;background:var(--bg-warn);padding:6px 10px;border-radius:6px;border-left:3px solid var(--warning);">
+               ⚠️ ${t('trip_pending_hint')}
+             </div>`}
+      </div>
+    </div>
+    <div class="detail-row" style="align-items:flex-start;">
+      <div class="k">${t('trip_note')}</div>
+      <div class="v">
+        <textarea id="trip-note" rows="2" style="width:100%;max-width:500px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;font-family:inherit;font-size:13px;resize:vertical;" placeholder="${t('trip_note')}">${s.triplicadoNote||''}</textarea>
+        <div style="margin-top:4px;"><button class="btn sm" onclick="saveTripNote('${s.id}')">${t('btn_save')}</button></div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <div class="k">操作</div>
+      <div class="v">
+        ${tripDone
+          ? `<button class="btn sm ghost" onclick="toggleTriplicado('${s.id}')">↩ ${t('trip_undo_btn')}</button>`
+          : `<button class="btn primary sm" onclick="toggleTriplicado('${s.id}')">✓ ${t('trip_mark_btn')}</button>`}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// 柜档案
+// ============================================================
+function renderContainers(){
+  const customers=data.customers||[];
+  const allContainers=[];
+  (data.shipments||[]).forEach(s=>(s.containers||[]).forEach(c=>allContainers.push({...c,shipment:s})));
+  const kw=document.getElementById('cont-search').value.toLowerCase();
+  const sts=getMS('cont-status-ms');
+  const tbl=document.querySelector('#container-table tbody');
+  let filtered=allContainers.filter(x=>{
+    if(sts.length&&!sts.includes(shipmentStatus(x.shipment)))return false;
+    if(kw){
+      if(!(x.containerNo||'').toLowerCase().includes(kw)&&!(x.shipment.blNo||'').toLowerCase().includes(kw)&&!(x.shipment.productDesc||'').toLowerCase().includes(kw))return false;
+    }
+    return true;
+  });
+  // 指挥台点入的额外过滤（v3.0.11）
+  if (dashboardJumpFilter==='portwarn'){
+    filtered=filtered.filter(x=>{const p=portDaysClass(x);return p&&['warn','over','critical'].includes(p.c);});
+  } else if (dashboardJumpFilter==='deposit'){
+    filtered=filtered.filter(x=>x.deposit&&x.deposit.amount>0&&x.deposit.status==='collected');
+  }
+  tbl.innerHTML=filtered.map(x=>{
+    const cust=customers.find(c=>c.id===x.shipment.customerId);
+    const p=portDaysClass(x);
+    const depChip = x.deposit&&x.deposit.amount>0
+      ? (x.deposit.status==='refunded'
+          ? `<span class="chip s-muted" title="${t('deposit_refunded')}">💰</span>`
+          : `<span class="chip s-warning" title="${t('deposit_collected')} ${fmtMoney(x.deposit.amount,x.deposit.currency)}">💰</span>`)
+      : '';
+    return `<tr onclick="if(!event.target.closest('a,button')){currentShipmentId='${x.shipment.id}';navigate('container-detail','${x.id}')}">
+      <td><a href="#" onclick="currentShipmentId='${x.shipment.id}';navigate('container-detail','${x.id}');return false;" style="color:var(--primary-dark);font-weight:600;">${x.containerNo||'-'}</a></td>
+      <td>${x.boxType||''}</td>
+      <td>${x.shipment.blNo}</td>
+      <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${x.shipment.customerId}')">${cust?cust.name:'-'}</a></td>
+      <td class="center"><span class="chip ${STATUS_CLASS[shipmentStatus(x.shipment)]}">${t('st_'+shipmentStatus(x.shipment))}</span></td>
+      <td class="center">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</td>
+      <td class="center">${depChip}</td>
+      <td class="nowrap">${fmtDate(x.actualArrivalDate)}</td>
+      <td class="nowrap">${(()=>{const m=x.contMilestones?.find(y=>y.stage==='pickup');return m?.actualDate?fmtDate(m.actualDate):'-';})()}</td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();currentShipmentId='${x.shipment.id}';navigate('container-detail','${x.id}')">查看</button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="10" class="empty">${t(dashboardJumpFilter?'empty_containers_filtered':'empty_containers')}</td></tr>`;
+  renderJumpBanner('containers');
+}
+
+// ============================================================
+// 柜详情（含陆运记录）
+// ============================================================
+function renderContainerDetail(){
+  let s,ct;
+  for(const x of data.shipments||[]){
+    const found=(x.containers||[]).find(c=>c.id===currentContainerId);
+    if(found){s=x;ct=found;break;}
+  }
+  if(!ct){navigate('containers');return;}
+  const cust=data.customers.find(c=>c.id===s.customerId);
+  const p=portDaysClass(ct);
+  document.getElementById('cd-title').textContent=`${ct.containerNo||'(无柜号)'}`;
+  document.getElementById('cd-sub').textContent=`${s.blNo} · ${cust?cust.name:'-'} · ${ct.boxType||''}`;
+  document.getElementById('cd-base').innerHTML=`
+    <div class="detail-row"><div class="k">柜号</div><div class="v"><strong>${ct.containerNo||'-'}</strong></div></div>
+    <div class="detail-row"><div class="k">箱型</div><div class="v">${ct.boxType||'-'}</div></div>
+    <div class="detail-row"><div class="k">重量</div><div class="v">${ct.weight||'-'}</div></div>
+    <div class="detail-row"><div class="k">体积</div><div class="v">${ct.volume||'-'}</div></div>
+    <div class="detail-row"><div class="k">免费期</div><div class="v">${ct.freeDays||21} 天</div></div>
+    <div class="detail-row"><div class="k">实际到港</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
+    <div class="detail-row"><div class="k">滞港状态</div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</div></div>
+  `;
+  const totC=(ct.containerCosts||[]).reduce((a,x)=>a+x.amount,0);
+  const totL=(ct.landTransportRecords||[]).reduce((a,x)=>a+Number(x.fee||0),0);
+  document.getElementById('cd-summary').innerHTML=`
+    <div class="detail-row"><div class="k">按柜成本</div><div class="v">${fmtMoney(totC,'MZN')}</div></div>
+    <div class="detail-row"><div class="k">陆运费</div><div class="v">${fmtMoney(totL,'MZN')}</div></div>
+    <div class="detail-row"><div class="k">本柜总成本</div><div class="v"><strong>${fmtMoney(totC+totL,'MZN')}</strong></div></div>
+    <div class="detail-row"><div class="k">陆运次数</div><div class="v">${(ct.landTransportRecords||[]).length}</div></div>
+  `;
+  // 陆运记录
+  document.getElementById('cd-land-records').innerHTML=(ct.landTransportRecords||[]).map(r=>`
+    <div class="land-record">
+      <div class="row1">
+        <strong>${r.plateNo||'-'}</strong>
+        <span class="badge">${r.destination||'-'}</span>
+        <span class="muted">司机：${r.driverName||'-'} ${r.driverPhone||''}</span>
+        <span class="num" style="margin-left:auto;font-weight:600;">${fmtMoney(r.fee,r.currency||'MZN')}</span>
+        <button class="btn sm danger" onclick="removeLandRecord('${s.id}','${ct.id}','${r.id}')">删</button>
+      </div>
+      <div class="row2">${r.scheduledDate?`计划 ${fmtDate(r.scheduledDate)}`:''} ${r.completedDate?`→ 完成 ${fmtDate(r.completedDate)}`:''} ${r.notes?`· ${r.notes}`:''}</div>
+    </div>
+  `).join('')||`<div class="empty">${t('empty_land_records')}</div>`;
+  // 押金区段
+  renderDepositSection(ct, s);
+}
+
+// ============================================================
+// 押金区段（v3.0.11）
+// ============================================================
+function renderDepositSection(ct, ship){
+  const d = ct.deposit || (ct.deposit = {amount:0,currency:'MZN',status:'none',collectedAt:'',refundedAt:'',collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]});
+  const hasDeposit = d.status !== 'none' || d.amount > 0;
+  const statusChip = d.status==='refunded'
+    ? `<span class="chip s-success">${t('deposit_refunded')}</span>`
+    : d.status==='collected'
+      ? `<span class="chip s-warning">${t('deposit_collected')}</span>`
+      : `<span class="chip s-muted">${t('deposit_no')}</span>`;
+  // 头部：金额/币种/状态/切换按钮
+  let html = `
+    <div class="deposit-head">
+      <div class="deposit-status">
+        ${statusChip}
+        <span class="deposit-amount">${hasDeposit ? fmtMoney(d.amount, d.currency) : '<span class="muted">'+t('deposit_no')+'</span>'}</span>
+        ${d.collectedAt?`<span class="muted small">· ${t('deposit_collected')} ${fmtDateTime(d.collectedAt)}</span>`:''}
+        ${d.refundedAt?`<span class="muted small">· ${t('deposit_refunded')} ${fmtDateTime(d.refundedAt)}</span>`:''}
+      </div>
+      <div class="deposit-actions">
+        ${d.status==='none' ? `<button class="btn sm primary" onclick="markDepositCollected('${ct.id}')">${t('deposit_mark_collected')}</button>` : ''}
+        ${d.status==='collected' ? `
+          <button class="btn sm primary" onclick="markDepositRefunded('${ct.id}')">${t('deposit_mark_refunded')}</button>
+          <button class="btn sm ghost" onclick="undoDepositStatus('${ct.id}','collected')">${t('deposit_mark_pending')}</button>
+        ` : ''}
+        ${d.status==='refunded' ? `<button class="btn sm ghost" onclick="undoDepositStatus('${ct.id}','refunded')">${t('deposit_mark_pending')}</button>` : ''}
+        <button class="btn sm" onclick="openDepositModal('${ct.id}')">${t('btn_edit')||'编辑'}</button>
+      </div>
+    </div>
+  `;
+  // 4 个凭证位
+  const proofs = [
+    {key:'collectedProof', label:t('deposit_proof_collected'), show:d.status!=='none'},
+    {key:'paidToShipProof', label:t('deposit_proof_paid_to_ship'), show:d.status!=='none'},
+    {key:'shipRefundedProof', label:t('deposit_proof_ship_refund'), show:d.status==='refunded'},
+    {key:'refundedToClientProof', label:t('deposit_proof_refunded_client'), show:d.status==='refunded'},
+  ];
+  html += `<div class="deposit-proofs">`;
+  for (const p of proofs) {
+    if (!p.show) continue;
+    const list = d[p.key] || [];
+    html += `
+      <div class="deposit-proof">
+        <div class="proof-label">${p.label}</div>
+        <div class="proof-imgs">
+          ${list.length ? list.map((img,i)=>`
+            <div class="proof-thumb">
+              <img src="${img}" onclick="window.open('${img}','_blank')" alt="proof" />
+              <button class="proof-del" onclick="deleteDepositProof('${ct.id}','${p.key}',${i})" title="${t('deposit_delete')}">×</button>
+            </div>
+          `).join('') : `<span class="muted small">${t('deposit_no_proof')}</span>`}
+        </div>
+        <label class="btn sm ghost upload-btn">
+          ${t('deposit_upload')}
+          <input type="file" accept="image/*" multiple style="display:none;" onchange="uploadDepositProof('${ct.id}','${p.key}',this)" />
+        </label>
+      </div>
+    `;
+  }
+  html += `</div>`;
+  document.getElementById('cd-deposit').innerHTML = html;
+}
+
+function findContainer(contId){
+  for (const s of data.shipments||[]) {
+    const ct = (s.containers||[]).find(c=>c.id===contId);
+    if (ct) return {ship:s, ct};
+  }
+  return null;
+}
+
+function markDepositCollected(contId){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  if (d.amount<=0){alert(t('deposit_no')+': '+t('err_amount_required'));return;}
+  if (d.status==='collected'||d.status==='refunded') return;
+  d.status='collected'; d.collectedAt=nowISO();
+  data.activities.push({type:'deposit_collected', contId, amount:d.amount, currency:d.currency, at:nowISO()});
+  saveData(); renderCurrent();
+}
+
+function markDepositRefunded(contId){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  if (d.status!=='collected'){alert(t('deposit_no'));return;}
+  if (!confirm(t('deposit_mark_refunded')+'?')) return;
+  d.status='refunded'; d.refundedAt=nowISO();
+  data.activities.push({type:'deposit_refunded', contId, amount:d.amount, currency:d.currency, at:nowISO()});
+  saveData(); renderCurrent();
+}
+
+function undoDepositStatus(contId, fromStatus){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  if (fromStatus==='collected'){
+    if (!confirm(t('deposit_mark_pending')+'?')) return;
+    d.status='none'; d.collectedAt='';
+  } else if (fromStatus==='refunded'){
+    if (!confirm(t('deposit_mark_pending')+'?')) return;
+    d.status='collected'; d.refundedAt='';
+  }
+  saveData(); renderCurrent();
+}
+
+function uploadDepositProof(contId, proofKey, fileInput){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  if (!d[proofKey]) d[proofKey]=[];
+  const files = Array.from(fileInput.files||[]);
+  if (!files.length) return;
+  let pending = files.length;
+  for (const file of files){
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      d[proofKey].push(e.target.result);
+      pending--;
+      if (pending===0){ saveData(); renderCurrent(); }
+    };
+    reader.readAsDataURL(file);
+  }
+  fileInput.value='';
+}
+
+function deleteDepositProof(contId, proofKey, idx){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  if (!confirm(t('deposit_delete')+'?')) return;
+  d[proofKey].splice(idx,1);
+  saveData(); renderCurrent();
+}
+
+function openDepositModal(contId){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  const m = document.getElementById('modal-content');
+  m.innerHTML = `
+    <h3>${t('deposit_title')}<span style="cursor:pointer;color:var(--text-muted);float:right;" onclick="closeModal()">×</span></h3>
+    <div class="form-row col3">
+      <div><label>${t('deposit_amount')} <span class="pt">Valor</span></label><input id="dep-amount" type="number" min="0" value="${d.amount||0}" /></div>
+      <div><label>${t('deposit_currency')} <span class="pt">Moeda</span></label>
+        <select id="dep-currency">
+          <option value="MZN" ${d.currency==='MZN'?'selected':''}>${t('deposit_currency_mzn')}</option>
+          <option value="USD" ${d.currency==='USD'?'selected':''}>${t('deposit_currency_usd')}</option>
+          <option value="EUR" ${d.currency==='EUR'?'selected':''}>${t('deposit_currency_eur')}</option>
+          <option value="CNY" ${d.currency==='CNY'?'selected':''}>${t('deposit_currency_cny')}</option>
+        </select>
+      </div>
+      <div><label>${t('deposit_status')} <span class="pt">Estado</span></label>
+        <select id="dep-status" disabled>
+          <option value="none" ${d.status==='none'?'selected':''}>${t('deposit_no')}</option>
+          <option value="collected" ${d.status==='collected'?'selected':''}>${t('deposit_collected')}</option>
+          <option value="refunded" ${d.status==='refunded'?'selected':''}>${t('deposit_refunded')}</option>
+        </select>
+      </div>
+    </div>
+    <div class="muted small" style="margin:6px 0 14px;">💡 状态通过主界面的「${t('deposit_mark_collected')} / ${t('deposit_mark_refunded')}」按钮切换，这里只编辑金额和币种</div>
+    <div class="actions">
+      <button class="btn" onclick="closeModal()">${t('btn_cancel')}</button>
+      <button class="btn primary" onclick="saveDeposit('${contId}')">${t('btn_save')}</button>
+    </div>
+  `;
+  document.getElementById('modal-back').classList.add('show');
+}
+
+function saveDeposit(contId){
+  const f = findContainer(contId); if(!f) return;
+  const d = f.ct.deposit;
+  const amt = Number(document.getElementById('dep-amount').value||0);
+  const cur = document.getElementById('dep-currency').value;
+  if (amt < 0){alert(t('err_amount_required'));return;}
+  d.amount = amt; d.currency = cur;
+  // 如果之前是 none 但现在填了金额 → 不自动改状态，让用户手动点标记按钮
+  saveData(); closeModal(); renderCurrent();
+}
+
+// ============================================================
+// 陆运录入模态框
+// ============================================================
+function openLandTransportModal(contId){
+  const m=document.getElementById('modal-content');
+  m.innerHTML=`
+    <h3>${t('btn_add_land')}<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
+    <div class="form-row"><div><label>车牌号 *<span class="pt">Matrícula</span></label><input id="lm-plate" placeholder="MOC-AAA-123" /></div>
+      <div><label>司机姓名<span class="pt">Motorista</span></label><input id="lm-driver" /></div></div>
+    <div class="form-row"><div><label>司机电话<span class="pt">Tel</span></label><input id="lm-phone" placeholder="+258 84 xxx xxxx" /></div>
+      <div><label>派送目的地<span class="pt">Destino</span></label><input id="lm-dest" placeholder="客户仓库 / 工地地址" /></div></div>
+    <div class="form-row col3"><div><label>陆运费 *<span class="pt">Taxa</span></label><input id="lm-fee" type="number" /></div>
+      <div><label>计划日期<span class="pt">Data planeada</span></label><input id="lm-sched" type="date" /></div>
+      <div><label>完成日期<span class="pt">Data concluída</span></label><input id="lm-done" type="date" /></div></div>
+    <div class="form-row single"><div><label>备注</label><textarea id="lm-notes" rows="2"></textarea></div></div>
+    <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveLandRecord('${contId}')">${t('btn_save')}</button></div>
+  `;
+  document.getElementById('modal-back').classList.add('show');
+}
+function saveLandRecord(contId){
+  const plate=document.getElementById('lm-plate').value.trim();
+  const fee=Number(document.getElementById('lm-fee').value||0);
+  if(!plate){alert(t('err_plate_required'));return;}
+  if(fee<=0){alert(t('err_landfee_required'));return;}
+  for(const s of data.shipments||[]){
+    const ct=(s.containers||[]).find(c=>c.id===contId);
+    if(ct){
+      if(!ct.landTransportRecords)ct.landTransportRecords=[];
+      ct.landTransportRecords.push({
+        id:uid(),plateNo:plate,
+        driverName:document.getElementById('lm-driver').value.trim(),
+        driverPhone:document.getElementById('lm-phone').value.trim(),
+        destination:document.getElementById('lm-dest').value.trim(),
+        fee, currency:'MZN',
+        scheduledDate:document.getElementById('lm-sched').value,
+        completedDate:document.getElementById('lm-done').value,
+        notes:document.getElementById('lm-notes').value.trim()
+      });
+      // 自动勾选陆运阶段
+      const lm=ct.contMilestones.find(m=>m.stage==='landtransport');
+      if(lm&&document.getElementById('lm-done').value){lm.status='done';lm.actualDate=document.getElementById('lm-done').value;}
+      saveData();
+      closeModal();
+      renderCurrent();
+      return;
+    }
+  }
+}
+function removeLandRecord(shipId,contId,recId){
+  if(!confirm('删除这条陆运记录？'))return;
+  const s=data.shipments.find(x=>x.id===shipId);
+  const ct=s.containers.find(c=>c.id===contId);
+  ct.landTransportRecords=(ct.landTransportRecords||[]).filter(r=>r.id!==recId);
+  saveData();renderCurrent();
+}
+
+// ============================================================
+// 模态框：提单 / 柜 / 客户（精简版）
+// ============================================================
+function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-back').classList.add('show');}
+function closeModal(){document.getElementById('modal-back').classList.remove('show');}
+document.getElementById('modal-back').addEventListener('click',e=>{if(e.target.id==='modal-back')closeModal();});
+
+function openShipmentModal(id){
+  const s=id?data.shipments.find(x=>x.id===id):null;
+  const customers=data.customers||[];
+  const html=`
+    <h3>${id?'编辑':'新建'}提单<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
+    <div class="form-row"><div><label>提单号 *<span class="pt">BL No.</span></label><input id="sm-bl" value="${s?.blNo||''}" /></div>
+      <div><label>客户 *<span class="pt">Cliente</span></label><select id="sm-cust">${customers.map(c=>`<option value="${c.id}" ${s?.customerId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div></div>
+    <div class="form-row"><div><label>商品描述<span class="pt">Produto</span></label><input id="sm-prod" value="${s?.productDesc||''}" /></div>
+      <div><label>HS Code</label><input id="sm-hs" value="${s?.hsCode||''}" /></div></div>
+    <div class="form-row col3"><div><label>货值<span class="pt">Valor</span></label><input id="sm-val" type="number" value="${s?.declaredValue||''}" /></div>
+      <div><label>币种</label><select id="sm-cur"><option ${s?.currency==='USD'?'selected':''}>USD</option><option ${s?.currency==='EUR'?'selected':''}>EUR</option><option ${s?.currency==='MZN'?'selected':''}>MZN</option></select></div>
+      <div><label>默认免费期(天)</label><input id="sm-freedays" type="number" value="${s?.freeDays||21}" /></div></div>
+    <div class="form-row"><div><label>船名<span class="pt">Navio</span></label><input id="sm-vessel" value="${s?.vessel||''}" /></div>
+      <div><label>航次<span class="pt">Viagem</span></label><input id="sm-voyage" value="${s?.voyage||''}" /></div></div>
+    <div class="form-row"><div><label>起运港<span class="pt">Origem</span></label><input id="sm-origin" value="${s?.originPort||''}" /></div>
+      <div><label>目的港<span class="pt">Destino</span></label><input id="sm-dest" value="${s?.destPort||'Beira'}" /></div></div>
+    <div class="form-row"><div><label>ETD</label><input id="sm-etd" type="date" value="${s?.etd||''}" /></div>
+      <div><label>ETA</label><input id="sm-eta" type="date" value="${s?.eta||''}" /></div></div>
+    <div class="form-row single"><div><label>备注</label><textarea id="sm-notes" rows="2">${s?.notes||''}</textarea></div></div>
+    <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveShipment('${id||''}')">${t('btn_save')}</button></div>
+  `;
+  openModal(html);
+}
+function saveShipment(id){
+  const bl=document.getElementById('sm-bl').value.trim();
+  const custId=document.getElementById('sm-cust').value;
+  if(!bl){alert(t('err_bl_required'));return;}
+  const obj={
+    blNo:bl,customerId:custId,
+    productDesc:document.getElementById('sm-prod').value,
+    hsCode:document.getElementById('sm-hs').value,
+    declaredValue:Number(document.getElementById('sm-val').value||0),
+    currency:document.getElementById('sm-cur').value,
+    freeDays:Number(document.getElementById('sm-freedays').value||21),
+    vessel:document.getElementById('sm-vessel').value,
+    voyage:document.getElementById('sm-voyage').value,
+    originPort:document.getElementById('sm-origin').value,
+    destPort:document.getElementById('sm-dest').value,
+    etd:document.getElementById('sm-etd').value,
+    eta:document.getElementById('sm-eta').value,
+    notes:document.getElementById('sm-notes').value,
+    updatedAt:nowISO()
+  };
+  if(id){
+    const s=data.shipments.find(x=>x.id===id);
+    Object.assign(s,obj);
+  }else{
+    const cust=data.customers.find(c=>c.id===custId);
+    const ns=newShip(uid(),obj.blNo,obj.customerId,obj.productDesc,obj.hsCode,obj.declaredValue,obj.vessel,obj.voyage,obj.etd,obj.eta,obj.originPort,obj.destPort,obj.notes,obj.freeDays);
+    Object.assign(ns,obj);
+    ns.paymentSchedule=generatePaymentSchedule(cust,ns);
+    data.shipments.push(ns);
+    currentShipmentId=ns.id;
+    id=ns.id;
+  }
+  saveData();closeModal();navigate('shipment-detail',id);
+}
+function deleteShipment(id){
+  if(!confirm('删除这个提单（包括所有柜和单证）？'))return;
+  data.shipments=data.shipments.filter(x=>x.id!==id);
+  saveData();navigate('shipments');
+}
+
+function openContainerModal(shipId,contId){
+  const s=data.shipments.find(x=>x.id===shipId);
+  if(!s)return;
+  const c=contId?s.containers.find(x=>x.id===contId):null;
+  const html=`
+    <h3>${contId?'编辑':'新建'}柜<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
+    <div class="form-row col3"><div><label>柜号 *<span class="pt">Nº Contentor</span></label><input id="cm-no" value="${c?.containerNo||''}" /></div>
+      <div><label>箱型<span class="pt">Tipo</span></label><select id="cm-box">${BOX_TYPES.map(b=>`<option ${c?.boxType===b?'selected':''}>${b}</option>`).join('')}</select></div>
+      <div><label>免费期(天)</label><input id="cm-freedays" type="number" value="${c?.freeDays||s.freeDays||21}" /></div></div>
+    <div class="form-row"><div><label>重量<span class="pt">Peso</span></label><input id="cm-weight" value="${c?.weight||''}" placeholder="22吨" /></div>
+      <div><label>体积<span class="pt">Volume</span></label><input id="cm-vol" value="${c?.volume||''}" placeholder="56CBM" /></div></div>
+    <div class="form-row"><div><label>实际到港日<span class="pt">Chegada</span></label><input id="cm-arr" type="date" value="${c?.actualArrivalDate||''}" /></div>
+      <div><label>提货日<span class="pt">Levant.</span></label><input id="cm-pickup" type="date" value="${c?.pickupDate||''}" /></div></div>
+    <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveContainer('${shipId}','${contId||''}')">${t('btn_save')}</button></div>
+  `;
+  openModal(html);
+}
+function saveContainer(shipId,contId){
+  const no=document.getElementById('cm-no').value.trim();
+  if(!no){alert(t('err_cont_required'));return;}
+  const s=data.shipments.find(x=>x.id===shipId);
+  const obj={
+    containerNo:no,
+    boxType:document.getElementById('cm-box').value,
+    freeDays:Number(document.getElementById('cm-freedays').value||21),
+    weight:document.getElementById('cm-weight').value,
+    volume:document.getElementById('cm-vol').value,
+    actualArrivalDate:document.getElementById('cm-arr').value,
+    pickupDate:document.getElementById('cm-pickup').value
+  };
+  if(contId){
+    const c=s.containers.find(x=>x.id===contId);
+    Object.assign(c,obj);
+  }else{
+    const nc=newCont();Object.assign(nc,obj);s.containers.push(nc);currentContainerId=nc.id;
+  }
+  saveData();closeModal();
+  if(currentView==='container-detail')navigate('container-detail',currentContainerId);
+  else navigate('shipment-detail',shipId);
+}
+
+function openCustomerModal(id){
+  const c=id?data.customers.find(x=>x.id===id):null;
+  const html=`
+    <h3>${id?'编辑':'新建'}客户<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
+    <div class="form-row"><div><label>中文名 *<span class="pt">Nome chinês</span></label><input id="cm-name" value="${c?.name||''}" /></div>
+      <div><label>葡语公司名<span class="pt">Nome PT</span></label><input id="cm-namept" value="${c?.namePt||''}" /></div></div>
+    <div class="form-row"><div><label>类型</label><select id="cm-type"><option value="chinese_boss" ${c?.type==='chinese_boss'?'selected':''}>${t('ct_boss')}</option><option value="individual" ${c?.type==='individual'?'selected':''}>${t('ct_individual')}</option></select></div>
+      <div><label>主营</label><input id="cm-biz" value="${c?.business||''}" /></div></div>
+    <div class="form-row"><div><label>微信</label><input id="cm-wx" value="${c?.wechat||''}" /></div>
+      <div><label>电话</label><input id="cm-phone" value="${c?.phone||''}" /></div></div>
+    <div class="form-row"><div><label>付款条款</label><select id="cm-terms">
+      <option value="prepay" ${c?.paymentTerms?.type==='prepay'?'selected':''}>${t('pt_prepay')}</option>
+      <option value="split50" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===50?'selected':''}>${t('pt_split_50')}</option>
+      <option value="split30" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===30?'selected':''}>${t('pt_split_30')}</option>
+      <option value="credit30" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===30?'selected':''}>${t('pt_credit_30')}</option>
+      <option value="credit60" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===60?'selected':''}>${t('pt_credit_60')}</option>
+    </select></div>
+      <div><label>信用分</label><input id="cm-credit" type="number" value="${c?.creditScore||80}" /></div></div>
+    <div class="form-row single"><div><label>备注</label><textarea id="cm-notes" rows="2">${c?.notes||''}</textarea></div></div>
+    <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveCustomer('${id||''}')">${t('btn_save')}</button></div>
+  `;
+  openModal(html);
+}
+function saveCustomer(id){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){alert(t('err_cust_required'));return;}
+  const termsVal=document.getElementById('cm-terms').value;
+  const termsMap={prepay:{type:'prepay'},split50:{type:'split',prepayPct:50},split30:{type:'split',prepayPct:30},credit30:{type:'credit',creditDays:30},credit60:{type:'credit',creditDays:60}};
+  const obj={
+    name,namePt:document.getElementById('cm-namept').value,
+    type:document.getElementById('cm-type').value,
+    business:document.getElementById('cm-biz').value,
+    wechat:document.getElementById('cm-wx').value,phone:document.getElementById('cm-phone').value,
+    paymentTerms:termsMap[termsVal],
+    creditScore:Number(document.getElementById('cm-credit').value||80),
+    notes:document.getElementById('cm-notes').value
+  };
+  if(id){
+    const c=data.customers.find(x=>x.id===id);
+    Object.assign(c,obj);
+  }else{
+    obj.id=uid();obj.createdAt=nowISO();obj.overdueCount=0;
+    data.customers.push(obj);
+  }
+  saveData();closeModal();renderCustomers();
+}
+function deleteCustomer(id){
+  if(!confirm('删除该客户？其提单不会被删除。'))return;
+  data.customers=data.customers.filter(x=>x.id!==id);
+  saveData();renderCustomers();
+}
+
+// ============================================================
+// 操作工具
+// ============================================================
+function setMilestone(shipId,stage,status){
+  const s=data.shipments.find(x=>x.id===shipId);
+  const m=s.shipMilestones.find(x=>x.stage===stage);
+  m.status=status;
+  if(status==='done'&&!m.actualDate)m.actualDate=nowISO().slice(0,10);
+  if(status!=='done')m.actualDate='';
+  saveData();renderCurrent();
+}
+function setContMilestone(shipId,contId,stage,status){
+  const s=data.shipments.find(x=>x.id===shipId);
+  const c=s.containers.find(x=>x.id===contId);
+  const m=c.contMilestones.find(x=>x.stage===stage);
+  m.status=status;
+  if(status==='done'&&!m.actualDate)m.actualDate=nowISO().slice(0,10);
+  if(status!=='done')m.actualDate='';
+  saveData();renderCurrent();
+}
+function updateDocStatus(shipId,docType,status){
+  const s=data.shipments.find(x=>x.id===shipId);
+  const d=s.sharedDocs.find(x=>x.docType===docType);
+  d.status=status;
+  if(status==='received'&&!d.receivedDate)d.receivedDate=nowISO().slice(0,10);
+  saveData();renderCurrent();
+}
+function markPaid(shipId,idx){
+  const s=data.shipments.find(x=>x.id===shipId);
+  const p=s.paymentSchedule[idx];
+  const amt=prompt(`确认收款金额（${p.name}）`,p.amount);
+  if(!amt)return;
+  p.paid=true;p.paidAmount=Number(amt);p.paidDate=nowISO().slice(0,10);
+  saveData();renderCurrent();
+}
+function addPaymentNode(shipId){
+  const name=prompt('应收节点名（如 尾款 / 加急费）');
+  if(!name)return;
+  const amt=Number(prompt('金额（USD）','0'));
+  const due=prompt('到期日 YYYY-MM-DD',nowISO().slice(0,10));
+  const s=data.shipments.find(x=>x.id===shipId);
+  s.paymentSchedule.push({name,pt:'',pct:0,amount:amt,dueDate:due||'',paid:false,paidDate:'',paidAmount:0,notes:''});
+  saveData();renderCurrent();
+}
+function addSharedCost(shipId){
+  const type=document.getElementById('new-sc-type').value;
+  const amount=Number(document.getElementById('new-sc-amt').value||0);
+  const notes=document.getElementById('new-sc-notes').value;
+  if(!amount){alert(t('err_amount_required'));return;}
+  const s=data.shipments.find(x=>x.id===shipId);
+  s.sharedCosts.push({type,amount,currency:'MZN',notes});
+  saveData();renderCurrent();
+}
+function removeSharedCost(shipId,idx){
+  if(!confirm('删除这条成本？'))return;
+  const s=data.shipments.find(x=>x.id===shipId);
+  s.sharedCosts.splice(idx,1);saveData();renderCurrent();
+}
+function addContCost(shipId,contId){
+  const type=document.getElementById('cc-type-'+contId).value;
+  const amount=Number(document.getElementById('cc-amt-'+contId).value||0);
+  if(!amount){alert(t('err_amount_required'));return;}
+  const s=data.shipments.find(x=>x.id===shipId);
+  const c=s.containers.find(x=>x.id===contId);
+  c.containerCosts.push({type,amount,currency:'MZN',notes:''});
+  saveData();renderCurrent();
+}
+function removeContCost(shipId,contId,idx){
+  if(!confirm('删除？'))return;
+  const s=data.shipments.find(x=>x.id===shipId);
+  const c=s.containers.find(x=>x.id===contId);
+  c.containerCosts.splice(idx,1);saveData();renderCurrent();
+}
+function addComm(shipId){
+  const v=document.getElementById('comm-content').value.trim();
+  if(!v)return;
+  const s=data.shipments.find(x=>x.id===shipId);
+  s.communications=s.communications||[];
+  s.communications.push({date:nowISO(),by:currentUser.username,content:v});
+  saveData();renderCurrent();
+}
+
+// 客户清关单（Triplicado）交付管理
+function toggleTriplicado(shipId){
+  const s=data.shipments.find(x=>x.id===shipId);if(!s)return;
+  if(s.triplicadoDelivered){
+    if(!confirm('撤销已交付标记？交付时间会清空'))return;
+    s.triplicadoDelivered=false;
+    s.triplicadoDeliveredAt='';
+  }else{
+    s.triplicadoDelivered=true;
+    s.triplicadoDeliveredAt=nowISO();
+  }
+  s.updatedAt=nowISO();
+  saveData();
+  // 记录 activity
+  data.activities=data.activities||[];
+  data.activities.push({type:s.triplicadoDelivered?'trip_delivered':'trip_undone',shipId,at:nowISO(),by:currentUser&&currentUser.username});
+  renderCurrent();
+}
+function saveTripNote(shipId){
+  const s=data.shipments.find(x=>x.id===shipId);if(!s)return;
+  const v=(document.getElementById('trip-note').value||'').trim();
+  s.triplicadoNote=v;
+  s.updatedAt=nowISO();
+  saveData();
+  alert(t('note_saved'));
+}
+
+// ============================================================
+// 数据导入导出 + 清空
+// ============================================================
+function exportAllJSON(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`beira-v30-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+function exportShipmentsCSV(){
+  const rows=[['BL','客户','商品','HS','柜数','状态','ETA','应收','实收']];
+  data.shipments.forEach(s=>{
+    const c=data.customers.find(x=>x.id===s.customerId);
+    const tot=shipmentTotals(s);
+    rows.push([s.blNo,c?.name||'',s.productDesc,s.hsCode,(s.containers||[]).length,t('st_'+shipmentStatus(s)),s.eta,tot.receivable,tot.received]);
+  });
+  downloadCSV(rows,'提单');
+}
+function exportContainersCSV(){
+  const rows=[['柜号','箱型','提单','客户','状态','在港','提货','陆运次数']];
+  data.shipments.forEach(s=>{(s.containers||[]).forEach(c=>{
+    const cu=data.customers.find(x=>x.id===s.customerId);
+    const p=portDaysClass(c);
+    const landM=c.contMilestones?.find(y=>y.stage==='pickup');
+    rows.push([c.containerNo,c.boxType,s.blNo,cu?.name||'',t('st_'+shipmentStatus(s)),p?.label||'',landM?.actualDate||'',(c.landTransportRecords||[]).length]);
+  });});
+  downloadCSV(rows,'柜');
+}
+function downloadCSV(rows,label){
+  const csv=rows.map(r=>r.map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`beira-${label}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+function clearAllData(){
+  if(!isAdmin()){alert(t('admin_only_denied'));return;}
+  if(!confirm('清空所有数据？此操作不可恢复'))return;
+  if(!confirm('最后一次确认'))return;
+  data={customers:[],shipments:[],activities:[],users:DEFAULT_USERS,settings:{lang:LANG}};
+  saveData();navigate('dashboard');
+}
+document.getElementById('import-json')?.addEventListener('change',function(e){
+  if(!isAdmin()){alert(t('admin_only_denied'));e.target.value='';return;}
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const imported=JSON.parse(ev.target.result);
+      if(!confirm('导入会覆盖现有数据，确认？'))return;
+      data=imported;if(!data.users)data.users=DEFAULT_USERS;
+      saveData();alert('导入成功！');navigate('dashboard');
+    }catch(err){alert('文件格式错误：'+err.message);}
+  };
+  reader.readAsText(file);
+});
+
+// ============================================================
+// 搜索 / 过滤绑定
+// ============================================================
+['cust-search','ship-search','cont-search'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',()=>{if(currentView==='dashboard')renderDashboard();else if(currentView==='customers')renderCustomers();else if(currentView==='shipments')renderShipments();else if(currentView==='containers')renderContainers();});
+});
+document.getElementById('ship-customer-filter')?.addEventListener('change',()=>renderShipments());
+
+// ============================================================
+// 时钟
+// ============================================================
+setInterval(()=>{const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleString(LANG==='pt'?'pt-PT':'zh-CN');},1000);
+
+// ============================================================
+// 启动（网络版 · 老大手动跑）：先 fetch 登录态 → 拉数据 → showApp
+// ============================================================
+(async function(){
+  try{
+    const meR=await fetch('/api/me',{credentials:'include'});
+    if(!meR.ok){document.getElementById('login-page').style.display='flex';return;}
+    currentUser=await meR.json();
+
+    const dR=await fetch('/api/data',{credentials:'include'});
+    if(!dR.ok){document.getElementById('login-page').style.display='flex';return;}
+    data=await dR.json();
+    if(!data.users) data.users=DEFAULT_USERS;
+    if(!data.settings) data.settings={lang:'zh'};
+    showApp();
+  }catch(e){
+    document.getElementById('login-page').style.display='flex';
+  }
+})();
+</script>
+</body>
+</html>

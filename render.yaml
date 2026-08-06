@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: beira-cloud
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SECRET
+        generateValue: true
+      - key: R2_ENDPOINT
+      - key: R2_ACCESS_KEY_ID
+      - key: R2_SECRET_ACCESS_KEY
+      - key: R2_BUCKET
+        value: beira-store

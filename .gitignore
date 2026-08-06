@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Runtime data (don't commit live store)
+data/store.json
+data/store.bak.json
+# SQLite files (legacy, defensive)
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Environment
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Cloudflare Tunnel binary (downloaded locally)
+cloudflared.exe
+cloudflared
