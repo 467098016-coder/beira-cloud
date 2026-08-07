@@ -613,6 +613,8 @@ const I18N={
     port_corn_warn:"⚠ Cornelder 即将到期",port_corn_over:"Cornelder 超期",port_corn_critical:"Cornelder 严重超期",
     port_lin_warn:"⚠ Linha 即将到期",port_lin_over:"Linha 超期",port_lin_critical:"Linha 严重超期",
     kpi_port_warn_sub:"Cornelder+Linha ≤3 天 / 已超期",
+    // v5.0.16：预警 chip + 按钮硬编码
+    days_unit:"天",port_warn_label:"剩",btn_view:"查看",kpi_jump_hint:"点击查看 →",
   },
   pt:{
     app_title:"Despacho Aduaneiro Beira",login_sub:"Despacho para clientes chineses · v3.0",login_err:"Utilizador ou senha errados",
@@ -680,6 +682,8 @@ const I18N={
     port_corn_warn:"⚠ Cornelder a expirar",port_corn_over:"Cornelder expirado",port_corn_critical:"Cornelder crítico",
     port_lin_warn:"⚠ Linha a expirar",port_lin_over:"Linha expirado",port_lin_critical:"Linha crítico",
     kpi_port_warn_sub:"Cornelder+Linha ≤3 dias / expirado",
+    // v5.0.16：预警 chip + 按钮硬编码
+    days_unit:"dias",port_warn_label:"Restam",btn_view:"Ver",kpi_jump_hint:"Clique para ver →",
   }
 };
 
@@ -854,12 +858,13 @@ function cornelderClass(c){
   const limit=Number(c.cornelderDays||14);
   const d=daysBetween(c.actualArrivalDate,nowISO());
   const remaining=limit-d;
+  const u=t('days_unit');
   if(remaining<0){
-    if(d-limit>=5)return{c:'critical',label:`超期 ${d-limit}天`,d};
-    return{c:'over',label:`超期 ${d-limit}天`,d};
+    if(d-limit>=5)return{c:'critical',label:`${t('port_critical')} ${d-limit} ${u}`,d};
+    return{c:'over',label:`${t('port_over')} ${d-limit} ${u}`,d};
   }
-  if(remaining<=3)return{c:'warn',label:`剩${remaining}天`,d};
-  return{c:'normal',label:`${d}天`,d};
+  if(remaining<=3)return{c:'warn',label:`${t('port_warn_label')} ${remaining} ${u}`,d};
+  return{c:'normal',label:`${d} ${u}`,d};
 }
 function linhaClass(c){
   if(!c.pickupDate)return null;
@@ -868,12 +873,13 @@ function linhaClass(c){
   const limit=Number(c.linhaDays||21);
   const d=daysBetween(c.pickupDate,nowISO());
   const remaining=limit-d;
+  const u=t('days_unit');
   if(remaining<0){
-    if(d-limit>=5)return{c:'critical',label:`超期 ${d-limit}天`,d};
-    return{c:'over',label:`超期 ${d-limit}天`,d};
+    if(d-limit>=5)return{c:'critical',label:`${t('port_critical')} ${d-limit} ${u}`,d};
+    return{c:'over',label:`${t('port_over')} ${d-limit} ${u}`,d};
   }
-  if(remaining<=3)return{c:'warn',label:`剩${remaining}天`,d};
-  return{c:'normal',label:`${d}天`,d};
+  if(remaining<=3)return{c:'warn',label:`${t('port_warn_label')} ${remaining} ${u}`,d};
+  return{c:'normal',label:`${d} ${u}`,d};
 }
 // 兼容旧名 portDaysClass = cornelder 预警（堆场阶段）
 function portDaysClass(c){return cornelderClass(c);}
@@ -1271,7 +1277,7 @@ function renderDashboard(){
       <td class="num">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</td>
       <td class="num green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</td>
       <td class="num ${tot.profit<0?'red':'green'}">${canSeeIncome()?fmtMoney(tot.profit):mask(tot.profit)}</td>
-      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">查看</button></td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">${t('btn_view')}</button></td>
     </tr>`;
   }).join('')||`<tr><td colspan="12" class="empty">${t('empty_dash_shipments')}</td></tr>`;
   // 欠款表（v5.0：从每个柜 receivable-received 算出欠款柜）
@@ -1465,7 +1471,7 @@ function renderShipments(){
       <td class="center">${tripChip}</td>
       <td class="nowrap">${s.triplicadoDelivered?fmtDate(s.triplicadoDeliveredAt):'<span class="muted">-</span>'}</td>
       <td class="nowrap">${fmtDate(s.eta)}</td>
-      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">查看</button></td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">${t('btn_view')}</button></td>
     </tr>`;
   }).join('')||`<tr><td colspan="11" class="empty">${t(dashboardJumpFilter?'empty_shipments_filtered':'empty_shipments')}</td></tr>`;
   renderJumpBanner('shipments');
@@ -1742,7 +1748,7 @@ function renderContainers(){
       <td class="center">${depChip}</td>
       <td class="nowrap">${fmtDate(x.actualArrivalDate)}</td>
       <td class="nowrap">${(()=>{const m=x.contMilestones?.find(y=>y.stage==='pickup');return m?.actualDate?fmtDate(m.actualDate):'-';})()}</td>
-      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();currentShipmentId='${x.shipment.id}';navigate('container-detail','${x.id}')">查看</button></td>
+      <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();currentShipmentId='${x.shipment.id}';navigate('container-detail','${x.id}')">${t('btn_view')}</button></td>
     </tr>`;
   }).join('')||`<tr><td colspan="10" class="empty">${t(dashboardJumpFilter?'empty_containers_filtered':'empty_containers')}</td></tr>`;
   renderJumpBanner('containers');
