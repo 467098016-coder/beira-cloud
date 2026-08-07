@@ -555,7 +555,7 @@ const I18N={
     th_recvable:"应收/柜",th_received:"实收/柜",th_cost:"成本/柜",th_profit:"毛利/柜",th_received_date:"已收日期",
     trip_title:"客户清关单（Triplicado）",trip_status_pending:"⏳ 待交客户",trip_status_done:"✅ 已交付",trip_mark_btn:"标记为已交付",trip_undo_btn:"撤销交付",trip_delivered_at:"交付时间",trip_note:"备注（如：现场交/微信发/客户代领）",trip_pending_hint:"清关单第三联（Triplicado）尚未交给客户 · 客户在 BEIRA 港提货必须出示此单",
     th_bl:"提单号",th_customer:"客户",th_product:"商品",th_cnt:"柜数",th_status:"状态",th_eta:"ETA",th_portdays:"在港",th_recv:"应收",th_paid:"实收",th_margin:"毛利",th_act:"操作",
-    th_name:"公司名",th_biz:"主营",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
+    th_name:"公司名",th_biz:"主营",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",th_destination:"目的城市",
     cust_title:"客户档案",cust_sub:"在莫中国老板 + 个人客户",ph_search_cust:"按公司名搜索",
     ship_title:"提单档案",ship_sub:"每个提单 = 一票货 · 包含若干柜",ph_search_ship:"按提单号/商品/HS/柜号搜索",
     cont_title:"柜档案",cont_sub:"所有集装箱柜",ph_search_cont:"按柜号/提单号/商品搜索",
@@ -627,7 +627,7 @@ const I18N={
     th_recvable:"A receber/cont",th_received:"Recebido/cont",th_cost:"Custo/cont",th_profit:"Margem/cont",th_received_date:"Data recebido",
     trip_title:"DU de Cliente (Triplicado)",trip_status_pending:"⏳ Pendente",trip_status_done:"✅ Entregue",trip_mark_btn:"Marcar como entregue",trip_undo_btn:"Desfazer",trip_delivered_at:"Data entrega",trip_note:"Obs (ex: entrega no local / WeChat / retirado pelo cliente)",trip_pending_hint:"O triplicado da DU ainda não foi entregue ao cliente · Necessário para levantar contentores no porto da Beira",
     th_bl:"BL",th_customer:"Cliente",th_product:"Produto",th_cnt:"Qtd",th_status:"Estado",th_eta:"ETA",th_portdays:"Porto",th_recv:"A receber",th_paid:"Recebido",th_margin:"Margem",th_act:"Acção",
-    th_name:"Nome",th_biz:"Negócio",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
+    th_name:"Nome",th_biz:"Negócio",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",th_destination:"Destino",
     cust_title:"Clientes",cust_sub:"Patrões chineses em Moçambique + clientes individuais",ph_search_cust:"Pesquisar nome",
     ship_title:"BLs",ship_sub:"Cada BL = uma carga · vários contentores",ph_search_ship:"Pesquisar BL/produto/HS/contentor",
     cont_title:"Contentores",cont_sub:"Todos os contentores",ph_search_cont:"Pesquisar contentor/BL",
@@ -917,6 +917,7 @@ function newCont(){
     freeDays:21,actualArrivalDate:'',pickupDate:'',deliveryDate:'',currentStage:'booking',
     contMilestones:CONT_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
     containerDocs:CONT_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
+    destination:'',                              // 目的城市（v5.0.14：从 Beira 提货后实际去往的城市）
     // v5.0 财务字段：应收款/实收 = 老板专属；成本 = 所有人可填可看
     receivable:0,currencyRecv:'MZN',  // 应收款（清关费，老板填）
     cost:0,currencyCost:'MZN',          // 成本（含陆运，所有人填）
@@ -966,6 +967,7 @@ function loadDemoData(){
   ['CAXU6118993','NEXU1523118','TDRU2908010','TDRU3445645','TRLU9106829','TDRU3147229','TDRU3294220','TCKU3844095','TDRU0631100','TCKU2155717','TDRU3297810'].forEach((no,i)=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='20GP';ct.weight='22吨';ct.volume='28CBM';ct.freeDays=21;
     ct.actualArrivalDate='2025-01-19';ct.pickupDate='2025-01-24';ct.deliveryDate='2025-01-26';
+    ct.destination='CHICUMBANE';          // 齐总的柜全去 CHICUMBANE 工地
     ct.contMilestones.forEach(m=>{m.status='done';m.actualDate=m.stage==='pickup'?'2025-01-24':m.stage==='landtransport'?'2025-01-25':'2025-01-26';});
     // v5.0 财务字段（每柜独立）
     ct.receivable=45000;ct.currencyRecv='MZN';
@@ -989,6 +991,7 @@ function loadDemoData(){
   ['PCIU9123217','PCIU9158825','PIDU4030578','UETU5981499','PIDU4214030','TCNU6202262','PIDU4114072'].forEach((no,i)=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='26吨';ct.volume='58CBM';ct.freeDays=14;
     ct.actualArrivalDate='2026-07-15';
+    ct.destination='贝拉工业园';            // 老张的柜去自己塑料厂
     ct.contMilestones.forEach(m=>{m.status='pending';});
     // v5.0 财务字段（免税，但有滞港费；老张 50% 预付已收）
     ct.receivable=55000;ct.currencyRecv='MZN';
@@ -1012,6 +1015,7 @@ function loadDemoData(){
   ['TCLU1872916','UETU7183630','TRLU7120710'].forEach(no=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40HQ';ct.weight='24吨';ct.volume='64CBM';ct.freeDays=21;
     ct.actualArrivalDate='2026-07-30';
+    ct.destination='贝拉中心区';            // 索总 SOL 超市
     // v5.0 财务字段（索总全预付已收）
     ct.receivable=65000;ct.currencyRecv='MZN';
     ct.cost=350000;ct.currencyCost='MZN';          // 关税+IVA+代理 分摊/柜
@@ -1028,6 +1032,7 @@ function loadDemoData(){
   ['CSNU7166077','CSNU6820352'].forEach(no=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='22吨';ct.volume='54CBM';ct.freeDays=21;
     ct.actualArrivalDate='2026-07-26';
+    ct.destination='贝拉新城';              // 吴总 NEWSPEED
     // v5.0 财务字段（吴总 50% 预付已收）
     ct.receivable=70000;ct.currencyRecv='MZN';
     ct.cost=350000;ct.currencyCost='MZN';
@@ -1043,6 +1048,7 @@ function loadDemoData(){
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-25';});
   let ct5=newCont();ct5.containerNo='PIDU4122015';ct5.boxType='40GP';ct5.weight='22吨';ct5.volume='56CBM';ct5.freeDays=21;
   ct5.actualArrivalDate='2026-07-25';
+  ct5.destination='BEIRA 商业区';           // 林总 FELIZ 超市
   // v5.0 财务字段（林总拖欠，整票未付）
   ct5.receivable=60000;ct5.currencyRecv='MZN';
   ct5.cost=340000;ct5.currencyCost='MZN';
@@ -1057,6 +1063,7 @@ function loadDemoData(){
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-28';});
   let ct6=newCont();ct6.containerNo='PCIU9258172';ct6.boxType='40GP';ct6.weight='20吨';ct6.volume='52CBM';ct6.freeDays=21;
   ct6.actualArrivalDate='2026-07-28';
+  ct6.destination='MIL 区';                 // 米总 MIL 超市
   // v5.0 财务字段（米总全预付已收）
   ct6.receivable=55000;ct6.currencyRecv='MZN';
   ct6.cost=300000;ct6.currencyCost='MZN';
@@ -1510,7 +1517,7 @@ function renderShipmentDetail(){
     return `<div class="container-card" onclick="currentContainerId='${c.id}';navigate('container-detail','${c.id}')">
       <div class="no">${c.containerNo||'(无柜号)'}</div>
       <div class="meta">${c.boxType||''} · ${c.weight||'-'} · ${c.volume||'-'} · 成本 ${canSeeIncome()?fmtMoney(c.cost):mask(c.cost)}</div>
-      <div>${p?`<span class="port-days ${p.c}">${p.label}</span>`:''}</div>
+      <div>${p?`<span class="port-days ${p.c}">${p.label}</span>`:''} ${c.destination?`<span class="chip s-muted" style="margin-left:4px;">📍 ${c.destination}</span>`:''}</div>
       <div class="meta">${fmtDate(c.actualArrivalDate)||''}</div>
     </div>`;
   }).join('')||`<div class="empty">${t('empty_shipment_containers')}</div>`;
@@ -1746,6 +1753,7 @@ function renderContainerDetail(){
     <div class="detail-row"><div class="k">体积</div><div class="v">${ct.volume||'-'}</div></div>
     <div class="detail-row"><div class="k">免费期</div><div class="v">${ct.freeDays||21} 天</div></div>
     <div class="detail-row"><div class="k">实际到港</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
+    <div class="detail-row"><div class="k">目的城市<span class="pt">Destino</span></div><div class="v">${ct.destination?`<strong>📍 ${ct.destination}</strong>`:'<span class="muted">未填（Beira 港提货后）</span>'}</div></div>
     <div class="detail-row"><div class="k">滞港状态</div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</div></div>
   `;
   const totRecv=canSeeIncome()?Number(ct.receivable||0):null;
@@ -2028,7 +2036,8 @@ function openContainerModal(shipId,contId){
     <div class="form-row"><div><label>重量<span class="pt">Peso</span></label><input id="cm-weight" value="${c?.weight||''}" placeholder="22吨" /></div>
       <div><label>体积<span class="pt">Volume</span></label><input id="cm-vol" value="${c?.volume||''}" placeholder="56CBM" /></div></div>
     <div class="form-row"><div><label>实际到港日<span class="pt">Chegada</span></label><input id="cm-arr" type="date" value="${c?.actualArrivalDate||''}" /></div>
-      <div><label>提货日<span class="pt">Levant.</span></label><input id="cm-pickup" type="date" value="${c?.pickupDate||''}" /></div></div>
+      <div><label>提货日<span class="pt">Levant.</span></label><input id="cm-pickup" type="date" value="${c?.pickupDate||''}" /></div>
+      <div><label>目的城市<span class="pt">Destino</span></label><input id="cm-dest" placeholder="如：CHICUMBANE / 马普托" value="${c?.destination||''}" /></div></div>
     <div class="form-row"><div><label>成本（含陆运）*<span class="pt">Custo</span></label><input id="cm-cost" type="number" value="${c?.cost||0}" /></div>
       <div><label>成本币种</label><select id="cm-cur-cost"><option ${c?.currencyCost==='MZN'?'selected':''}>MZN</option><option ${c?.currencyCost==='USD'?'selected':''}>USD</option><option ${c?.currencyCost==='EUR'?'selected':''}>EUR</option></select></div></div>
     ${adminSection}
@@ -2048,6 +2057,7 @@ function saveContainer(shipId,contId){
     volume:document.getElementById('cm-vol').value,
     actualArrivalDate:document.getElementById('cm-arr').value,
     pickupDate:document.getElementById('cm-pickup').value,
+    destination:document.getElementById('cm-dest').value.trim(),
     cost:Number(document.getElementById('cm-cost').value||0),
     currencyCost:document.getElementById('cm-cur-cost').value
   };
