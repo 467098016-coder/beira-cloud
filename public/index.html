@@ -608,10 +608,11 @@ const I18N={
     empty_shipment_containers:'本票没有柜子 · 点"+ 添加柜"',
     empty_comms:"暂无沟通",
     empty_containers:"暂无柜子",empty_containers_filtered:"暂无符合条件的柜子",
-    // KPI 跳转提示 + 催款话术（v3.0.13）
-    kpi_jump_hint:"点击查看 →",
-    btn_copy_reminder:"催款话术",
-    copy_reminder_done:"催款话术已复制到剪贴板 ✅\n\n",
+    // v5.0.15：免堆期(Cornelder) + 免柜期(Linha)
+    th_cornelder_days:"免堆期(Cornelder)",th_linha_days:"免柜期(Linha)",
+    port_corn_warn:"⚠ Cornelder 即将到期",port_corn_over:"Cornelder 超期",port_corn_critical:"Cornelder 严重超期",
+    port_lin_warn:"⚠ Linha 即将到期",port_lin_over:"Linha 超期",port_lin_critical:"Linha 严重超期",
+    kpi_port_warn_sub:"Cornelder+Linha ≤3 天 / 已超期",
   },
   pt:{
     app_title:"Despacho Aduaneiro Beira",login_sub:"Despacho para clientes chineses · v3.0",login_err:"Utilizador ou senha errados",
@@ -674,10 +675,11 @@ const I18N={
     empty_shipment_containers:'Sem contentores · Clique em "+ Adicionar contentor"',
     empty_comms:"Sem comunicações",
     empty_containers:"Sem contentores",empty_containers_filtered:"Sem contentores correspondentes",
-    // Hint KPI + lembrete de cobrança (v3.0.13)
-    kpi_jump_hint:"Clique para ver →",
-    btn_copy_reminder:"Lembrete de cobrança",
-    copy_reminder_done:"Lembrete copiado para a área de transferência ✅\n\n",
+    // v5.0.15：免堆期(Cornelder) + 免柜期(Linha)
+    th_cornelder_days:"Dias Cornelder (Demurrage)",th_linha_days:"Dias Linha (Detention)",
+    port_corn_warn:"⚠ Cornelder a expirar",port_corn_over:"Cornelder expirado",port_corn_critical:"Cornelder crítico",
+    port_lin_warn:"⚠ Linha a expirar",port_lin_over:"Linha expirado",port_lin_critical:"Linha crítico",
+    kpi_port_warn_sub:"Cornelder+Linha ≤3 dias / expirado",
   }
 };
 
@@ -842,18 +844,39 @@ function containerPortDays(c){
   if(c.contMilestones&&c.contMilestones.find(m=>m.stage==='pickup'&&m.actualDate))return null;
   return daysBetween(c.actualArrivalDate,nowISO());
 }
-function portDaysClass(c){
-  const d=containerPortDays(c);
-  if(d===null)return null;
-  const freeDays=Number(c.freeDays||21);
-  const remaining=freeDays-d;
+// v5.0.15：拆成两个预警
+// - cornelderClass：堆场预警（到港日 → 提货日），超 cornelderDays
+// - linhaClass：   滞箱预警（提货日 → 还箱日），超 linhaDays
+function cornelderClass(c){
+  if(!c.actualArrivalDate)return null;
+  // 已提货则不再算堆场预警
+  if(c.contMilestones&&c.contMilestones.find(m=>m.stage==='pickup'&&m.actualDate))return null;
+  const limit=Number(c.cornelderDays||14);
+  const d=daysBetween(c.actualArrivalDate,nowISO());
+  const remaining=limit-d;
   if(remaining<0){
-    if(d-freeDays>=5)return{c:'critical',label:`超期 ${d-freeDays}天`,d};
-    return{c:'over',label:`超期 ${d-freeDays}天`,d};
+    if(d-limit>=5)return{c:'critical',label:`超期 ${d-limit}天`,d};
+    return{c:'over',label:`超期 ${d-limit}天`,d};
   }
   if(remaining<=3)return{c:'warn',label:`剩${remaining}天`,d};
   return{c:'normal',label:`${d}天`,d};
 }
+function linhaClass(c){
+  if(!c.pickupDate)return null;
+  // 已还箱则不再算滞箱预警（deliveryDate 已填）
+  if(c.deliveryDate)return null;
+  const limit=Number(c.linhaDays||21);
+  const d=daysBetween(c.pickupDate,nowISO());
+  const remaining=limit-d;
+  if(remaining<0){
+    if(d-limit>=5)return{c:'critical',label:`超期 ${d-limit}天`,d};
+    return{c:'over',label:`超期 ${d-limit}天`,d};
+  }
+  if(remaining<=3)return{c:'warn',label:`剩${remaining}天`,d};
+  return{c:'normal',label:`${d}天`,d};
+}
+// 兼容旧名 portDaysClass = cornelder 预警（堆场阶段）
+function portDaysClass(c){return cornelderClass(c);}
 function shipmentTotals(s){
   // v5.0 模型：每柜独立字段，整单汇总
   const receivable=(s.containers||[]).reduce((sum,c)=>sum+Number(c.receivable||0),0);
@@ -914,7 +937,7 @@ if(data.settings&&data.settings.lang){LANG=data.settings.lang;}
 function newCont(){
   return {
     id:uid(),containerNo:'',boxType:'40GP',weight:'',volume:'',
-    freeDays:21,actualArrivalDate:'',pickupDate:'',deliveryDate:'',currentStage:'booking',
+    cornelderDays:14,linhaDays:21,actualArrivalDate:'',pickupDate:'',deliveryDate:'',currentStage:'booking',
     contMilestones:CONT_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
     containerDocs:CONT_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
     destination:'',                              // 目的城市（v5.0.14：从 Beira 提货后实际去往的城市）
@@ -928,9 +951,10 @@ function newCont(){
       collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]}
   };
 }
-function newShip(id,blNo,custId,productDesc,hsCode,vessel,voyage,etd,eta,originPort,destPort,notes,freeDays){
+function newShip(id,blNo,custId,productDesc,hsCode,vessel,voyage,etd,eta,originPort,destPort,notes,cornelderDays,linhaDays){
   return {
-    id,blNo,customerId:custId,productDesc,hsCode,originPort,destPort,vessel,voyage,etd,eta,freeDays:Number(freeDays||21),
+    id,blNo,customerId:custId,productDesc,hsCode,originPort,destPort,vessel,voyage,etd,eta,
+    cornelderDays:Number(cornelderDays||14),linhaDays:Number(linhaDays||21),
     shipMilestones:SHIP_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
     sharedDocs:SHARED_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
     communications:[],containers:[],
@@ -965,7 +989,7 @@ function loadDemoData(){
   sh.triplicadoDeliveredAt='2025-01-26T10:30:00.000Z';
   sh.triplicadoNote='现场交给齐总本人，已签收';
   ['CAXU6118993','NEXU1523118','TDRU2908010','TDRU3445645','TRLU9106829','TDRU3147229','TDRU3294220','TCKU3844095','TDRU0631100','TCKU2155717','TDRU3297810'].forEach((no,i)=>{
-    let ct=newCont();ct.containerNo=no;ct.boxType='20GP';ct.weight='22吨';ct.volume='28CBM';ct.freeDays=21;
+    let ct=newCont();ct.containerNo=no;ct.boxType='20GP';ct.weight='22吨';ct.volume='28CBM';ct.cornelderDays=14;ct.linhaDays=21;
     ct.actualArrivalDate='2025-01-19';ct.pickupDate='2025-01-24';ct.deliveryDate='2025-01-26';
     ct.destination='CHICUMBANE';          // 齐总的柜全去 CHICUMBANE 工地
     ct.contMilestones.forEach(m=>{m.status='done';m.actualDate=m.stage==='pickup'?'2025-01-24':m.stage==='landtransport'?'2025-01-25':'2025-01-26';});
@@ -989,7 +1013,7 @@ function loadDemoData(){
   ['invoice','packing','bl','co'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-06-15';});
   // sh2 老张：已放行但单据还没交（仓库说客户下周一取）
   ['PCIU9123217','PCIU9158825','PIDU4030578','UETU5981499','PIDU4214030','TCNU6202262','PIDU4114072'].forEach((no,i)=>{
-    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='26吨';ct.volume='58CBM';ct.freeDays=14;
+    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='26吨';ct.volume='58CBM';ct.cornelderDays=14;ct.linhaDays=21;
     ct.actualArrivalDate='2026-07-15';
     ct.destination='贝拉工业园';            // 老张的柜去自己塑料厂
     ct.contMilestones.forEach(m=>{m.status='pending';});
@@ -1013,7 +1037,7 @@ function loadDemoData(){
   sh.shipMilestones.find(m=>m.stage==='declaration').notes='海关查验中';
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-30';});
   ['TCLU1872916','UETU7183630','TRLU7120710'].forEach(no=>{
-    let ct=newCont();ct.containerNo=no;ct.boxType='40HQ';ct.weight='24吨';ct.volume='64CBM';ct.freeDays=21;
+    let ct=newCont();ct.containerNo=no;ct.boxType='40HQ';ct.weight='24吨';ct.volume='64CBM';ct.cornelderDays=14;ct.linhaDays=21;
     ct.actualArrivalDate='2026-07-30';
     ct.destination='贝拉中心区';            // 索总 SOL 超市
     // v5.0 财务字段（索总全预付已收）
@@ -1030,7 +1054,7 @@ function loadDemoData(){
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-05':k==='loading'?'2026-07-10':'2026-07-26';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-26';});
   ['CSNU7166077','CSNU6820352'].forEach(no=>{
-    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='22吨';ct.volume='54CBM';ct.freeDays=21;
+    let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='22吨';ct.volume='54CBM';ct.cornelderDays=14;ct.linhaDays=21;
     ct.actualArrivalDate='2026-07-26';
     ct.destination='贝拉新城';              // 吴总 NEWSPEED
     // v5.0 财务字段（吴总 50% 预付已收）
@@ -1046,7 +1070,7 @@ function loadDemoData(){
   sh=newShip('sh5','TXSV51253400','c5','超市百货 + 食品 + 日化','4901.99','PIL HONG KONG','PH2026-31E','2026-07-12','2026-07-27','Shanghai','Beira','原表第 167 行 1x40GP，林总拖欠，月结到期未付',21);
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-08':k==='loading'?'2026-07-12':k==='sea'?'2026-07-25':'2026-07-25';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-25';});
-  let ct5=newCont();ct5.containerNo='PIDU4122015';ct5.boxType='40GP';ct5.weight='22吨';ct5.volume='56CBM';ct5.freeDays=21;
+  let ct5=newCont();ct5.containerNo='PIDU4122015';ct5.boxType='40GP';ct5.weight='22吨';ct5.volume='56CBM';ct5.cornelderDays=14;ct5.linhaDays=21;
   ct5.actualArrivalDate='2026-07-25';
   ct5.destination='BEIRA 商业区';           // 林总 FELIZ 超市
   // v5.0 财务字段（林总拖欠，整票未付）
@@ -1061,7 +1085,7 @@ function loadDemoData(){
   sh=newShip('sh6','YIZC50228200','c6','超市日用品 + 小家电','8516.71','PIL KAOHSIUNG','PK2026-31E','2026-07-13','2026-07-28','Shanghai','Beira','原表第 170 行 1x40GP，米总在港待放行',21);
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-09':k==='loading'?'2026-07-13':k==='sea'?'2026-07-28':'2026-07-28';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-28';});
-  let ct6=newCont();ct6.containerNo='PCIU9258172';ct6.boxType='40GP';ct6.weight='20吨';ct6.volume='52CBM';ct6.freeDays=21;
+  let ct6=newCont();ct6.containerNo='PCIU9258172';ct6.boxType='40GP';ct6.weight='20吨';ct6.volume='52CBM';ct6.cornelderDays=14;ct6.linhaDays=21;
   ct6.actualArrivalDate='2026-07-28';
   ct6.destination='MIL 区';                 // 米总 MIL 超市
   // v5.0 财务字段（米总全预付已收）
@@ -1178,8 +1202,12 @@ function renderDashboard(){
   const doneShip=shipments.filter(s=>shipmentStatus(s)==='delivered');
   document.getElementById('kpi-shipment').textContent=`${activeShip.length} / ${allContainers.filter(c=>shipmentStatus(c.shipment)!=='delivered').length}`;
   document.getElementById('kpi-shipment-sub').textContent=`${t('st_in_transit')} ${activeShip.length} · ${t('st_delivered')} ${doneShip.length}`;
-  // 滞港预警：剩余≤3 或 已超期
-  let warnCount=0;allContainers.forEach(c=>{const p=portDaysClass(c);if(p&&(p.c==='warn'||p.c==='over'||p.c==='critical'))warnCount++;});
+  // 滞港预警：Cornelder 堆场预警 + Linha 滞箱预警 合计
+  let warnCount=0;allContainers.forEach(c=>{
+    const p1=cornelderClass(c);
+    const p2=linhaClass(c);
+    [p1,p2].forEach(p=>{if(p&&(p.c==='warn'||p.c==='over'||p.c==='critical'))warnCount++;});
+  });
   document.getElementById('kpi-overdue-port').textContent=warnCount;
   // 应收未收（v5.0：从每个柜的 receivable 减 received 算每柜欠款）
   let totalRecv=0,overdueNodes=0;
@@ -1221,7 +1249,15 @@ function renderDashboard(){
   tbl.innerHTML=sorted.map(s=>{
     const cust=customers.find(c=>c.id===s.customerId);
     const tot=shipmentTotals(s);
-    const portCell=s.containers[0]?(function(){const p=portDaysClass(s.containers[0]);if(!p)return'<td class="center">-</td>';return `<td class="center"><span class="port-days ${p.c}">${p.label}</span></td>`;})():'<td class="center">-</td>';
+    const portCell=s.containers[0]?(function(){
+      const p1=cornelderClass(s.containers[0]);
+      const p2=linhaClass(s.containers[0]);
+      if(!p1&&!p2)return'<td class="center">-</td>';
+      const html=[];
+      if(p1)html.push(`<span class="port-days ${p1.c}" title="Cornelder 堆场预警">🏖 ${p1.label}</span>`);
+      if(p2)html.push(`<span class="port-days ${p2.c}" title="Linha 滞箱预警">📦 ${p2.label}</span>`);
+      return `<td class="center">${html.join('<br>')}</td>`;
+    })():'<td class="center">-</td>';
     const tripChip=s.triplicadoDelivered?'<span class="chip s-success" title="'+fmtDateTime(s.triplicadoDeliveredAt)+'">✅</span>':'<span class="chip s-warning" title="'+t('trip_status_pending')+'">⏳</span>';
     return `<tr onclick="if(!event.target.closest('a,button'))navigate('shipment-detail','${s.id}')">
       <td><a href="#" onclick="navigate('shipment-detail','${s.id}');return false;" style="color:var(--primary-dark);font-weight:600;">${s.blNo}</a></td>
@@ -1260,9 +1296,8 @@ function renderDashboard(){
       <td class="num">${canSeeIncome()?fmtMoney(remain):mask(remain)}</td>
       <td class="nowrap">${container.receivedDate?fmtDate(container.receivedDate):'<span class="muted">从未收款</span>'}</td>
       <td class="nowrap">${isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未付</span>'}</td>
-      <td class="center"><button class="btn sm" onclick="event.stopPropagation();copyReminder('${ship.id}')" data-i18n="btn_copy_reminder">催款话术</button></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="7" class="empty">${t('empty_dash_receivables')}</td></tr>`;
+  }).join('')||`<tr><td colspan="6" class="empty">${t('empty_dash_receivables')}</td></tr>`;
   // 顶部导航计数
   document.getElementById('nav-customer-count').textContent=customers.length;
   document.getElementById('nav-shipment-count').textContent=shipments.length;
@@ -1306,33 +1341,6 @@ function renderJumpBanner(view){
     if (viewEl) viewEl.querySelector('.page-header')?.after(el);
   }
   el.innerHTML = `<span>${t('filter_jump_label')}${labels[dashboardJumpFilter]||''}</span><button class="btn sm ghost" onclick="clearJumpFilter()">${t('filter_jump_clear')}</button>`;
-}
-
-// ============================================================
-// 催款话术
-// ============================================================
-function copyReminder(shipId){
-  const s=data.shipments.find(x=>x.id===shipId);if(!s)return;
-  const cust=data.customers.find(c=>c.id===s.customerId);
-  // v5.0：列出每柜未收情况，按最早未收日期/从未收款算逾期天数
-  const unpaidConts=(s.containers||[]).filter(c=>Number(c.received||0)<Number(c.receivable||0));
-  if(!unpaidConts.length)return;
-  const totalRemain=unpaidConts.reduce((a,c)=>a+(Number(c.receivable||0)-Number(c.received||0)),0);
-  // 最早未收日期 = 所有柜 receivedDate 中最早（如果是空，就当作 30 天前）
-  const earliest=unpaidConts.map(c=>c.receivedDate).filter(Boolean).sort()[0];
-  let days=null;
-  if(earliest){days=Math.max(0,Math.floor((Date.now()-new Date(earliest).getTime())/86400000));}
-  const overdueLine=days!==null?`已超过 ${days} 天`:`一直未付`;
-  const msg=`${cust.name}：
-
-BL ${s.blNo} 的 ${unpaidConts.length} 个柜还差 ${fmtMoney(totalRemain)}（${overdueLine}），麻烦核对一下尽快安排。
-
-催一下，BEIRA 港的免费期快到了，超期一天的仓储费也不少。
-
-如已付款请忽略，谢谢！
-
-— Beira 清关`;
-  navigator.clipboard.writeText(msg).then(()=>alert(t('copy_reminder_done')+msg),()=>alert(msg));
 }
 
 // ============================================================
@@ -1500,7 +1508,8 @@ function renderShipmentDetail(){
     <div class="detail-row"><div class="k">船名航次</div><div class="v">${s.vessel||''} ${s.voyage||''}</div></div>
     <div class="detail-row"><div class="k">起运→目的</div><div class="v">${s.originPort||''} → ${s.destPort||''}</div></div>
     <div class="detail-row"><div class="k">ETD / ETA</div><div class="v">${fmtDate(s.etd)} → ${fmtDate(s.eta)}</div></div>
-    <div class="detail-row"><div class="k">默认免费期</div><div class="v">${s.freeDays||21} 天</div></div>
+    <div class="detail-row"><div class="k">默认 Cornelder<span class="pt">Demurrage</span></div><div class="v">${s.cornelderDays||14} 天</div></div>
+    <div class="detail-row"><div class="k">默认 Linha<span class="pt">Detention</span></div><div class="v">${s.linhaDays||21} 天</div></div>
     <div class="detail-row"><div class="k">备注</div><div class="v">${s.notes||'-'}</div></div>
   `;
   document.getElementById('detail-summary').innerHTML=`
@@ -1513,11 +1522,14 @@ function renderShipmentDetail(){
   `;
   // 柜子列表
   document.getElementById('detail-containers').innerHTML=(s.containers||[]).map(c=>{
-    const p=portDaysClass(c);
+    const p1=cornelderClass(c);
+    const p2=linhaClass(c);
+    const pHtml=(p1?`<span class="port-days ${p1.c}" title="Cornelder 堆场预警">🏖 ${p1.label}</span> `:'')
+      +(p2?`<span class="port-days ${p2.c}" title="Linha 滞箱预警">📦 ${p2.label}</span>`:'');
     return `<div class="container-card" onclick="currentContainerId='${c.id}';navigate('container-detail','${c.id}')">
       <div class="no">${c.containerNo||'(无柜号)'}</div>
       <div class="meta">${c.boxType||''} · ${c.weight||'-'} · ${c.volume||'-'} · 成本 ${canSeeIncome()?fmtMoney(c.cost):mask(c.cost)}</div>
-      <div>${p?`<span class="port-days ${p.c}">${p.label}</span>`:''} ${c.destination?`<span class="chip s-muted" style="margin-left:4px;">📍 ${c.destination}</span>`:''}</div>
+      <div>${pHtml} ${c.destination?`<span class="chip s-muted" style="margin-left:4px;">📍 ${c.destination}</span>`:''}</div>
       <div class="meta">${fmtDate(c.actualArrivalDate)||''}</div>
     </div>`;
   }).join('')||`<div class="empty">${t('empty_shipment_containers')}</div>`;
@@ -1555,7 +1567,6 @@ function renderShipmentDetail(){
         <div class="muted">应收 ${canSeeIncome()?fmtMoney(recv):mask(recv)} / 实收 ${canSeeIncome()?fmtMoney(paid):mask(paid)}</div>
         <div>${remain===0?'<span class="chip s-success">已结清</span>':isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未付</span>'}</div>
         ${c.receivedDate?`<span class="muted" style="font-size:11px;">${fmtDate(c.receivedDate)}</span>`:'<span class="muted" style="font-size:11px;">从未收款</span>'}
-        <button class="btn sm" onclick="copyReminder('${s.id}')">催款</button>
       </div>`;
     }).join('')||'<div class="muted">无柜子</div>'}
     <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">💡 在柜档案编辑应收/实收字段（老板专属），或直接点"+ 新建柜"</div>
@@ -1702,15 +1713,20 @@ function renderContainers(){
     }
     return true;
   });
-  // 指挥台点入的额外过滤（v3.0.11）
+  // 指挥台点入的额外过滤（v3.0.11）— Cornelder + Linha 两个预警合计
   if (dashboardJumpFilter==='portwarn'){
-    filtered=filtered.filter(x=>{const p=portDaysClass(x);return p&&['warn','over','critical'].includes(p.c);});
+    filtered=filtered.filter(x=>{
+      const p1=cornelderClass(x),p2=linhaClass(x);
+      return [p1,p2].some(p=>p&&['warn','over','critical'].includes(p.c));
+    });
   } else if (dashboardJumpFilter==='deposit'){
     filtered=filtered.filter(x=>x.deposit&&x.deposit.amount>0&&x.deposit.status==='collected');
   }
   tbl.innerHTML=filtered.map(x=>{
     const cust=customers.find(c=>c.id===x.shipment.customerId);
-    const p=portDaysClass(x);
+    const p1=cornelderClass(x),p2=linhaClass(x);
+    const pHtml=(p1?`<span class="port-days ${p1.c}" title="Cornelder 堆场预警">🏖 ${p1.label}</span> `:'')
+      +(p2?`<span class="port-days ${p2.c}" title="Linha 滞箱预警">📦 ${p2.label}</span>`:'');
     const depChip = x.deposit&&x.deposit.amount>0
       ? (x.deposit.status==='refunded'
           ? `<span class="chip s-muted" title="${t('deposit_refunded')}">💰</span>`
@@ -1722,7 +1738,7 @@ function renderContainers(){
       <td>${x.shipment.blNo}</td>
       <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${x.shipment.customerId}')">${cust?cust.name:'-'}</a></td>
       <td class="center"><span class="chip ${STATUS_CLASS[shipmentStatus(x.shipment)]}">${t('st_'+shipmentStatus(x.shipment))}</span></td>
-      <td class="center">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</td>
+      <td class="center">${(p1||p2)?pHtml:'-'}</td>
       <td class="center">${depChip}</td>
       <td class="nowrap">${fmtDate(x.actualArrivalDate)}</td>
       <td class="nowrap">${(()=>{const m=x.contMilestones?.find(y=>y.stage==='pickup');return m?.actualDate?fmtDate(m.actualDate):'-';})()}</td>
@@ -1751,10 +1767,12 @@ function renderContainerDetail(){
     <div class="detail-row"><div class="k">箱型</div><div class="v">${ct.boxType||'-'}</div></div>
     <div class="detail-row"><div class="k">重量</div><div class="v">${ct.weight||'-'}</div></div>
     <div class="detail-row"><div class="k">体积</div><div class="v">${ct.volume||'-'}</div></div>
-    <div class="detail-row"><div class="k">免费期</div><div class="v">${ct.freeDays||21} 天</div></div>
+    <div class="detail-row"><div class="k">免堆期<span class="pt">Cornelder</span></div><div class="v">${ct.cornelderDays||14} 天 <small class="muted">（到港 → 提货）</small></div></div>
+    <div class="detail-row"><div class="k">免柜期<span class="pt">Linha</span></div><div class="v">${ct.linhaDays||21} 天 <small class="muted">（提货 → 还箱）</small></div></div>
     <div class="detail-row"><div class="k">实际到港</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
     <div class="detail-row"><div class="k">目的城市<span class="pt">Destino</span></div><div class="v">${ct.destination?`<strong>📍 ${ct.destination}</strong>`:'<span class="muted">未填（Beira 港提货后）</span>'}</div></div>
-    <div class="detail-row"><div class="k">滞港状态</div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</div></div>
+    <div class="detail-row"><div class="k">堆场预警<span class="pt">Demurrage</span></div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'<span class="muted">已提柜 / 未到港</span>'}</div></div>
+    <div class="detail-row"><div class="k">滞箱预警<span class="pt">Detention</span></div><div class="v">${(()=>{const l=linhaClass(ct);return l?`<span class="port-days ${l.c}">${l.label}</span>`:'<span class="muted">未提柜 / 已还箱</span>';})()}</div></div>
   `;
   const totRecv=canSeeIncome()?Number(ct.receivable||0):null;
   const totCost=canSeeIncome()?Number(ct.cost||0):null;
@@ -1968,7 +1986,8 @@ function openShipmentModal(id){
       <div><label>客户 *<span class="pt">Cliente</span></label><select id="sm-cust">${customers.map(c=>`<option value="${c.id}" ${s?.customerId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div></div>
     <div class="form-row"><div><label>商品描述<span class="pt">Produto</span></label><input id="sm-prod" value="${s?.productDesc||''}" /></div>
       <div><label>HS Code</label><input id="sm-hs" value="${s?.hsCode||''}" /></div></div>
-    <div class="form-row"><div><label>默认免费期(天)</label><input id="sm-freedays" type="number" value="${s?.freeDays||21}" /></div></div>
+    <div class="form-row"><div><label>默认 Cornelder(天)<span class="pt">Demurrage</span></label><input id="sm-cornelder" type="number" value="${s?.cornelderDays||14}" /></div>
+      <div><label>默认 Linha(天)<span class="pt">Detention</span></label><input id="sm-linha" type="number" value="${s?.linhaDays||21}" /></div></div>
     <div class="form-row"><div><label>船名<span class="pt">Navio</span></label><input id="sm-vessel" value="${s?.vessel||''}" /></div>
       <div><label>航次<span class="pt">Viagem</span></label><input id="sm-voyage" value="${s?.voyage||''}" /></div></div>
     <div class="form-row"><div><label>起运港<span class="pt">Origem</span></label><input id="sm-origin" value="${s?.originPort||''}" /></div>
@@ -1988,7 +2007,8 @@ function saveShipment(id){
     blNo:bl,customerId:custId,
     productDesc:document.getElementById('sm-prod').value,
     hsCode:document.getElementById('sm-hs').value,
-    freeDays:Number(document.getElementById('sm-freedays').value||21),
+    cornelderDays:Number(document.getElementById('sm-cornelder').value||14),
+    linhaDays:Number(document.getElementById('sm-linha').value||21),
     vessel:document.getElementById('sm-vessel').value,
     voyage:document.getElementById('sm-voyage').value,
     originPort:document.getElementById('sm-origin').value,
@@ -2002,7 +2022,7 @@ function saveShipment(id){
     const s=data.shipments.find(x=>x.id===id);
     Object.assign(s,obj);
   }else{
-    const ns=newShip(uid(),obj.blNo,obj.customerId,obj.productDesc,obj.hsCode,obj.vessel,obj.voyage,obj.etd,obj.eta,obj.originPort,obj.destPort,obj.notes,obj.freeDays);
+    const ns=newShip(uid(),obj.blNo,obj.customerId,obj.productDesc,obj.hsCode,obj.vessel,obj.voyage,obj.etd,obj.eta,obj.originPort,obj.destPort,obj.notes,obj.cornelderDays,obj.linhaDays);
     Object.assign(ns,obj);
     data.shipments.push(ns);
     currentShipmentId=ns.id;
@@ -2032,7 +2052,8 @@ function openContainerModal(shipId,contId){
     <h3>${contId?'编辑':'新建'}柜<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
     <div class="form-row col3"><div><label>柜号 *<span class="pt">Nº Contentor</span></label><input id="cm-no" value="${c?.containerNo||''}" /></div>
       <div><label>箱型<span class="pt">Tipo</span></label><select id="cm-box">${BOX_TYPES.map(b=>`<option ${c?.boxType===b?'selected':''}>${b}</option>`).join('')}</select></div>
-      <div><label>免费期(天)</label><input id="cm-freedays" type="number" value="${c?.freeDays||s.freeDays||21}" /></div></div>
+      <div><label>免堆期(天)<span class="pt">Cornelder</span></label><input id="cm-cornelder" type="number" value="${c?.cornelderDays??s.cornelderDays??14}" /></div>
+      <div><label>免柜期(天)<span class="pt">Linha</span></label><input id="cm-linha" type="number" value="${c?.linhaDays??s.linhaDays??21}" /></div></div>
     <div class="form-row"><div><label>重量<span class="pt">Peso</span></label><input id="cm-weight" value="${c?.weight||''}" placeholder="22吨" /></div>
       <div><label>体积<span class="pt">Volume</span></label><input id="cm-vol" value="${c?.volume||''}" placeholder="56CBM" /></div></div>
     <div class="form-row"><div><label>实际到港日<span class="pt">Chegada</span></label><input id="cm-arr" type="date" value="${c?.actualArrivalDate||''}" /></div>
@@ -2052,7 +2073,8 @@ function saveContainer(shipId,contId){
   const obj={
     containerNo:no,
     boxType:document.getElementById('cm-box').value,
-    freeDays:Number(document.getElementById('cm-freedays').value||21),
+    cornelderDays:Number(document.getElementById('cm-cornelder').value||14),
+    linhaDays:Number(document.getElementById('cm-linha').value||21),
     weight:document.getElementById('cm-weight').value,
     volume:document.getElementById('cm-vol').value,
     actualArrivalDate:document.getElementById('cm-arr').value,
@@ -2203,12 +2225,13 @@ function exportShipmentsCSV(){
   downloadCSV(rows,'提单');
 }
 function exportContainersCSV(){
-  const rows=[['柜号','箱型','提单','客户','状态','在港','提货','应收','成本','实收']];
+  const rows=[['柜号','箱型','提单','客户','状态','Cornelder堆场','Linha滞箱','应收','成本','实收']];
   data.shipments.forEach(s=>{(s.containers||[]).forEach(c=>{
     const cu=data.customers.find(x=>x.id===s.customerId);
-    const p=portDaysClass(c);
+    const p1=cornelderClass(c);
+    const p2=linhaClass(c);
     const landM=c.contMilestones?.find(y=>y.stage==='pickup');
-    rows.push([c.containerNo,c.boxType,s.blNo,cu?.name||'',t('st_'+shipmentStatus(s)),p?.label||'',landM?.actualDate||'',c.receivable||0,c.cost||0,c.received||0]);
+    rows.push([c.containerNo,c.boxType,s.blNo,cu?.name||'',t('st_'+shipmentStatus(s)),p1?.label||'',p2?.label||'',c.receivable||0,c.cost||0,c.received||0]);
   });});
   downloadCSV(rows,'柜');
 }
