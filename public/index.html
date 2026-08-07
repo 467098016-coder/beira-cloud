@@ -615,6 +615,13 @@ const I18N={
     kpi_port_warn_sub:"Cornelder+Linha ≤3 天 / 已超期",
     // v5.0.16：预警 chip + 按钮硬编码
     days_unit:"天",port_warn_label:"剩",btn_view:"查看",kpi_jump_hint:"点击查看 →",
+    // v5.0.16.1：柜详情页 detail-row 中葡
+    cd_weight:"重量",cd_volume:"体积",th_actual_arrival:"实际到港",
+    cd_corn_sub:"（到港 → 提货）",cd_lin_sub:"（提货 → 还箱）",
+    cd_dest_empty:"未填（Beira 港提货后）",
+    cd_corn_idle:"已提柜 / 未到港",cd_lin_idle:"未提柜 / 已还箱",
+    cd_corn_warn_label:"堆场预警",cd_lin_warn_label:"滞箱预警",
+    cd_recv:"应收款（清关费）",cd_cost:"成本（含陆运）",cd_received:"实收",cd_outstanding:"未收",cd_profit:"毛利 = 应收 - 成本",
   },
   pt:{
     app_title:"Despacho Aduaneiro Beira",login_sub:"Despacho para clientes chineses · v3.0",login_err:"Utilizador ou senha errados",
@@ -684,6 +691,13 @@ const I18N={
     kpi_port_warn_sub:"Cornelder+Linha ≤3 dias / expirado",
     // v5.0.16：预警 chip + 按钮硬编码
     days_unit:"dias",port_warn_label:"Restam",btn_view:"Ver",kpi_jump_hint:"Clique para ver →",
+    // v5.0.16.1：柜详情页 detail-row 中葡
+    cd_weight:"Peso",cd_volume:"Volume",th_actual_arrival:"Chegada efectiva",
+    cd_corn_sub:"(Chegada → Levantamento)",cd_lin_sub:"(Levantamento → Devolução)",
+    cd_dest_empty:"Não preenchido (após Porto de Beira)",
+    cd_corn_idle:"Levantado / não chegou",cd_lin_idle:"Não levantado / devolvido",
+    cd_corn_warn_label:"Alerta Demurrage",cd_lin_warn_label:"Alerta Detention",
+    cd_recv:"A receber (taxa)",cd_cost:"Custo (c/ transporte)",cd_received:"Recebido",cd_outstanding:"Por receber",cd_profit:"Margem = Receber - Custo",
   }
 };
 
@@ -1769,16 +1783,16 @@ function renderContainerDetail(){
   document.getElementById('cd-title').textContent=`${ct.containerNo||'(无柜号)'}`;
   document.getElementById('cd-sub').textContent=`${s.blNo} · ${cust?cust.name:'-'} · ${ct.boxType||''}`;
   document.getElementById('cd-base').innerHTML=`
-    <div class="detail-row"><div class="k">柜号</div><div class="v"><strong>${ct.containerNo||'-'}</strong></div></div>
-    <div class="detail-row"><div class="k">箱型</div><div class="v">${ct.boxType||'-'}</div></div>
-    <div class="detail-row"><div class="k">重量</div><div class="v">${ct.weight||'-'}</div></div>
-    <div class="detail-row"><div class="k">体积</div><div class="v">${ct.volume||'-'}</div></div>
-    <div class="detail-row"><div class="k">免堆期<span class="pt">Cornelder</span></div><div class="v">${ct.cornelderDays||14} 天 <small class="muted">（到港 → 提货）</small></div></div>
-    <div class="detail-row"><div class="k">免柜期<span class="pt">Linha</span></div><div class="v">${ct.linhaDays||21} 天 <small class="muted">（提货 → 还箱）</small></div></div>
-    <div class="detail-row"><div class="k">实际到港</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
-    <div class="detail-row"><div class="k">目的城市<span class="pt">Destino</span></div><div class="v">${ct.destination?`<strong>📍 ${ct.destination}</strong>`:'<span class="muted">未填（Beira 港提货后）</span>'}</div></div>
-    <div class="detail-row"><div class="k">堆场预警<span class="pt">Demurrage</span></div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'<span class="muted">已提柜 / 未到港</span>'}</div></div>
-    <div class="detail-row"><div class="k">滞箱预警<span class="pt">Detention</span></div><div class="v">${(()=>{const l=linhaClass(ct);return l?`<span class="port-days ${l.c}">${l.label}</span>`:'<span class="muted">未提柜 / 已还箱</span>';})()}</div></div>
+    <div class="detail-row"><div class="k">${t('th_contno')}</div><div class="v"><strong>${ct.containerNo||'-'}</strong></div></div>
+    <div class="detail-row"><div class="k">${t('th_boxtype')}</div><div class="v">${ct.boxType||'-'}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_weight')}</div><div class="v">${ct.weight||'-'}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_volume')}</div><div class="v">${ct.volume||'-'}</div></div>
+    <div class="detail-row"><div class="k">${t('th_cornelder_days')}<span class="pt">Cornelder</span></div><div class="v">${ct.cornelderDays||14} ${t('days_unit')} <small class="muted">${t('cd_corn_sub')}</small></div></div>
+    <div class="detail-row"><div class="k">${t('th_linha_days')}<span class="pt">Linha</span></div><div class="v">${ct.linhaDays||21} ${t('days_unit')} <small class="muted">${t('cd_lin_sub')}</small></div></div>
+    <div class="detail-row"><div class="k">${t('th_actual_arrival')}</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
+    <div class="detail-row"><div class="k">${t('th_destination')}<span class="pt">Destino</span></div><div class="v">${ct.destination?`<strong>📍 ${ct.destination}</strong>`:`<span class="muted">${t('cd_dest_empty')}</span>`}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_corn_warn_label')}<span class="pt">Demurrage</span></div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:`<span class="muted">${t('cd_corn_idle')}</span>`}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_lin_warn_label')}<span class="pt">Detention</span></div><div class="v">${(()=>{const l=linhaClass(ct);return l?`<span class="port-days ${l.c}">${l.label}</span>`:`<span class="muted">${t('cd_lin_idle')}</span>`;})()}</div></div>
   `;
   const totRecv=canSeeIncome()?Number(ct.receivable||0):null;
   const totCost=canSeeIncome()?Number(ct.cost||0):null;
@@ -1786,12 +1800,12 @@ function renderContainerDetail(){
   const profit=canSeeIncome()?(Number(ct.receivable||0)-Number(ct.cost||0)):null;
   const remain=canSeeIncome()?(Number(ct.receivable||0)-Number(ct.received||0)):null;
   document.getElementById('cd-summary').innerHTML=`
-    <div class="detail-row"><div class="k">应收款（清关费）</div><div class="v">${canSeeIncome()?fmtMoney(ct.receivable,ct.currencyRecv):mask(ct.receivable)}</div></div>
-    <div class="detail-row"><div class="k">成本（含陆运）</div><div class="v">${canSeeIncome()?fmtMoney(ct.cost,ct.currencyCost):mask(ct.cost)}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_recv')}</div><div class="v">${canSeeIncome()?fmtMoney(ct.receivable,ct.currencyRecv):mask(ct.receivable)}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_cost')}</div><div class="v">${canSeeIncome()?fmtMoney(ct.cost,ct.currencyCost):mask(ct.cost)}</div></div>
     ${isAdmin()?`
-    <div class="detail-row"><div class="k">实收</div><div class="v green">${fmtMoney(ct.received,ct.currencyReceived)} <span class="muted" style="font-size:11px;">${ct.receivedDate?fmtDate(ct.receivedDate):'未收'}</span></div></div>
-    <div class="detail-row"><div class="k">未收</div><div class="v ${remain>0?'red':'muted'}">${fmtMoney(remain)}</div></div>
-    <div class="detail-row"><div class="k">毛利 = 应收 - 成本</div><div class="v ${profit<0?'red':'green'}"><strong>${fmtMoney(profit)}</strong></div></div>
+    <div class="detail-row"><div class="k">${t('cd_received')}</div><div class="v green">${fmtMoney(ct.received,ct.currencyReceived)} <span class="muted" style="font-size:11px;">${ct.receivedDate?fmtDate(ct.receivedDate):t('cd_outstanding')}</span></div></div>
+    <div class="detail-row"><div class="k">${t('cd_outstanding')}</div><div class="v ${remain>0?'red':'muted'}">${fmtMoney(remain)}</div></div>
+    <div class="detail-row"><div class="k">${t('cd_profit')}</div><div class="v ${profit<0?'red':'green'}"><strong>${fmtMoney(profit)}</strong></div></div>
     `:''}
   `;
   // v5.0：取消陆运录入 UI（陆运成本已并入每柜 cost）
