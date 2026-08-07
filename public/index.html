@@ -356,7 +356,7 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
     <div class="card">
       <h2 data-i18n="dash_overdue">欠款提醒</h2>
       <table class="tbl" id="dash-overdue-table">
-        <thead><tr><th data-i18n="th_bl">提单</th><th data-i18n="th_customer">客户</th><th data-i18n="th_node">节点</th><th class="num" data-i18n="th_amt">金额</th><th class="nowrap" data-i18n="th_due">到期</th><th class="nowrap" data-i18n="th_status">状态</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <thead><tr><th data-i18n="th_bl">提单</th><th data-i18n="th_customer">客户</th><th data-i18n="th_contno">柜号</th><th class="num" data-i18n="th_recv">未收</th><th class="nowrap" data-i18n="th_received_date">最近收款日</th><th class="nowrap" data-i18n="th_status">状态</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -366,7 +366,7 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
     <div class="toolbar"><input id="cust-search" data-i18n-placeholder="ph_search_cust" placeholder="按公司名搜索" style="flex:1;max-width:300px;" /></div>
     <div class="card" style="padding:0;">
       <table class="tbl" id="customer-table">
-        <thead><tr><th data-i18n="th_name">公司名</th><th data-i18n="th_biz">主营</th><th class="center" data-i18n="th_terms">付款条款</th><th class="center" data-i18n="th_cnt">提单</th><th class="num" data-i18n="th_debt">欠款</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
+        <thead><tr><th data-i18n="th_name">公司名</th><th data-i18n="th_biz">主营</th><th class="center" data-i18n="th_cnt">提单</th><th class="num" data-i18n="th_debt">欠款</th><th class="center" data-i18n="th_act">操作</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -494,7 +494,6 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn ghost" onclick="navigate(currentContainerId?'containers':'shipments')" data-i18n="btn_back">← 返回</button>
         <button class="btn" onclick="openContainerModal(currentShipmentId, currentContainerId)" data-i18n="btn_edit_cont">编辑柜</button>
-        <button class="btn" onclick="openLandTransportModal(currentContainerId)" data-i18n="btn_add_land">+ 添加陆运</button>
         <button class="btn" onclick="openDepositModal(currentContainerId)" data-i18n="deposit_title">+ 编辑押金</button>
       </div>
     </div>
@@ -505,10 +504,6 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
     <div class="card">
       <h2 data-i18n="deposit_section">押金信息</h2>
       <div id="cd-deposit"></div>
-    </div>
-    <div class="card">
-      <h2 data-i18n="cd_land">陆运记录</h2>
-      <div id="cd-land-records"></div>
     </div>
   </section>
   <section id="view-settings" class="view">
@@ -525,7 +520,7 @@ table.tbl .pt-tag{font-size:11px;color:var(--text-muted);display:block;margin-to
     </div>
     <div class="card admin-only" style="max-width:680px;">
       <h2 data-i18n="set_demo">演示数据</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;" data-i18n="set_demo_sub">6 客户 + 6 提单（含 1/2/3/7/11 柜/票），覆盖在港/清关/超期/已签收各种状态，含陆运记录。</p>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;" data-i18n="set_demo_sub">6 客户 + 6 提单（1/2/3/7/11 柜/票），每柜独立应收/成本/实收字段（应收/实收老板专属）。</p>
       <button class="btn" onclick="loadDemoData()" data-i18n="btn_load_demo">加载演示数据</button>
     </div>
     <div class="card admin-only" style="max-width:680px;border-color:var(--danger);">
@@ -552,21 +547,22 @@ const I18N={
     logout:"退出登录",role_admin:"管理员",role_worker:"工人",
     nav_dashboard:"指挥台",nav_customers:"客户",nav_shipments:"提单",nav_containers:"柜档案",nav_settings:"数据管理",
     dash_title:"指挥台",dash_sub:"贝拉港集装箱柜清关 · 一票一眼看清",
-    btn_new_ship:"+ 新建提单",btn_new_cust:"+ 新建客户",btn_new_cont:"+ 新建柜",btn_add_cont:"+ 添加柜",btn_add_land:"+ 添加陆运",btn_edit_ship:"编辑提单",btn_edit_cont:"编辑柜",btn_back:"← 返回",btn_delete:"删除",btn_save:"保存",btn_cancel:"取消",btn_export_all:"导出全部 (JSON)",btn_export_ship:"导出提单 (CSV)",btn_export_cont:"导出柜 (CSV)",btn_clear_all:"清空全部数据",btn_load_demo:"加载演示数据",admin_only_hint:"以下功能仅管理员可见：导入文件、加载演示数据、清空全部数据。如需操作请联系老板。",admin_only_denied:"权限不足：仅管理员可执行此操作",
+    btn_new_ship:"+ 新建提单",btn_new_cust:"+ 新建客户",btn_new_cont:"+ 新建柜",btn_add_cont:"+ 添加柜",btn_edit_ship:"编辑提单",btn_edit_cont:"编辑柜",btn_back:"← 返回",btn_delete:"删除",btn_save:"保存",btn_cancel:"取消",btn_export_all:"导出全部 (JSON)",btn_export_ship:"导出提单 (CSV)",btn_export_cont:"导出柜 (CSV)",btn_clear_all:"清空全部数据",btn_load_demo:"加载演示数据",admin_only_hint:"以下功能仅管理员可见：导入文件、加载演示数据、清空全部数据。如需操作请联系老板。",admin_only_denied:"权限不足：仅管理员可执行此操作",
     kpi_ship:"本月提单 / 柜",kpi_port_warn:"滞港预警",kpi_port_warn_sub:"剩余 ≤3 天 / 已超期",kpi_receivable:"应收未收",kpi_trip:"待交客户单据",kpi_trip_sub:"Triplicado 未交付",kpi_margin:"本月毛利",kpi_margin_sub:"已签收提单",
     dash_table:"提单一览（按 ETA 排序）",dash_overdue:"欠款提醒",
     filter_all:"全部状态",filter_all_cust:"全部客户",ms_all:"全选",ms_none:"清空",ms_placeholder:"选择状态…",
     th_trip:"客户单据",th_tripdate:"交付日期",
+    th_recvable:"应收/柜",th_received:"实收/柜",th_cost:"成本/柜",th_profit:"毛利/柜",th_received_date:"已收日期",
     trip_title:"客户清关单（Triplicado）",trip_status_pending:"⏳ 待交客户",trip_status_done:"✅ 已交付",trip_mark_btn:"标记为已交付",trip_undo_btn:"撤销交付",trip_delivered_at:"交付时间",trip_note:"备注（如：现场交/微信发/客户代领）",trip_pending_hint:"清关单第三联（Triplicado）尚未交给客户 · 客户在 BEIRA 港提货必须出示此单",
     th_bl:"提单号",th_customer:"客户",th_product:"商品",th_cnt:"柜数",th_status:"状态",th_eta:"ETA",th_portdays:"在港",th_recv:"应收",th_paid:"实收",th_margin:"毛利",th_act:"操作",
-    th_node:"节点",th_amt:"金额",th_due:"到期",th_name:"公司名",th_biz:"主营",th_terms:"付款条款",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
+    th_name:"公司名",th_biz:"主营",th_debt:"欠款",th_hs:"HS",th_route:"起运→目的",th_contno:"柜号",th_boxtype:"箱型",th_pickup:"提货日",th_delivery:"签收日",
     cust_title:"客户档案",cust_sub:"在莫中国老板 + 个人客户",ph_search_cust:"按公司名搜索",
     ship_title:"提单档案",ship_sub:"每个提单 = 一票货 · 包含若干柜",ph_search_ship:"按提单号/商品/HS/柜号搜索",
     cont_title:"柜档案",cont_sub:"所有集装箱柜",ph_search_cont:"按柜号/提单号/商品搜索",
     detail_base:"提单基本信息",detail_summary:"本票汇总",detail_containers:"本票包含的柜子",
     tab_docs:"单证（共享）",tab_payment:"应收/实收",tab_costs:"成本/毛利",tab_milestones:"流程节点",tab_comms:"沟通记录",tab_trip:"客户单据",
-    cd_base:"柜基本信息",cd_summary:"本柜汇总",cd_land:"陆运记录",cd_title:"柜详情",
-    set_title:"数据管理",set_sub:"导入/导出/重置/账号",set_export:"导出",set_import:"导入",set_demo:"演示数据",set_demo_sub:"6 客户 + 6 提单（含 1/2/3/7/11 柜/票），覆盖在港/清关/超期/已签收各种状态，含陆运记录。",set_danger:"危险操作",
+    cd_base:"柜基本信息",cd_summary:"本柜汇总",cd_title:"柜详情",
+    set_title:"数据管理",set_sub:"导入/导出/重置/账号",set_export:"导出",set_import:"导入",set_demo:"演示数据",set_demo_sub:"6 客户 + 6 提单（1/2/3/7/11 柜/票），每柜独立应收/成本/实收字段（应收/实收老板专属）。",set_danger:"危险操作",
     // 状态
     st_in_transit:"在途",st_at_port:"在港",st_clearing:"清关中",st_released:"已放行",st_landtransport:"已陆运",st_delivered:"已完结",st_on_hold:"挂起",st_cancelled:"已取消",
     // 8 阶段
@@ -574,21 +570,16 @@ const I18N={
     // 单证
     doc_invoice:"商业发票",doc_packing:"装箱单",doc_bl:"海运提单",doc_co:"原产地证",doc_ciq:"CIQ/装运前检验",doc_fumi:"熏蒸证书",doc_insurance:"保险单",doc_permit:"进口许可证",
     doc_icr:"ICR 验车报告",doc_seal_record:"铅封记录",doc_container_photo:"柜子照片",
-    // 费用类型
-    cost_tariff:"关税",cost_iva:"CIVA/IVA",cost_agent:"代理费",cost_inspect:"查验费",cost_translate:"翻译费",cost_co_agent:"原产地证代办",cost_misc:"杂费",cost_pickup:"提货费",cost_delivery:"派送费",cost_storage:"仓储/滞港费",cost_land:"陆运费",
-    // 付款条款
-    pt_prepay:"全预付",pt_split_50:"50%预付 + 提货前",pt_split_30:"30%预付 + 提货前",pt_credit_30:"月结30天",pt_credit_60:"月结60天",
     // 滞港
     port_normal:"正常",port_warn:"⚠ 即将滞港",port_over:"超期",port_critical:"严重超期",
     // 客户类型
     ct_boss:"中国老板",ct_individual:"个人客户",
     // 其他
     cnt:"柜",count_unit:"柜",ship_count_label:"提单",
-    land_record:"陆运",add_land:"+ 添加陆运记录",
     hidden_admin:"[管理员可见]",
     // 表单校验提示（v3.0.10 收编）
     err_cust_required:"请填客户名",err_bl_required:"请填提单号",err_cont_required:"请填柜号",
-    err_plate_required:"请填车牌号",err_amount_required:"请填金额",err_landfee_required:"请填陆运费",
+    err_amount_required:"请填金额",
     note_saved:"备注已保存",
     // 押金（v3.0.11 新增）
     deposit_title:"货柜押金",deposit_section:"押金信息",
@@ -617,7 +608,6 @@ const I18N={
     empty_shipment_containers:'本票没有柜子 · 点"+ 添加柜"',
     empty_comms:"暂无沟通",
     empty_containers:"暂无柜子",empty_containers_filtered:"暂无符合条件的柜子",
-    empty_land_records:"无陆运记录",
     // KPI 跳转提示 + 催款话术（v3.0.13）
     kpi_jump_hint:"点击查看 →",
     btn_copy_reminder:"催款话术",
@@ -629,35 +619,33 @@ const I18N={
     logout:"Sair",role_admin:"Administrador",role_worker:"Operário",
     nav_dashboard:"Painel",nav_customers:"Clientes",nav_shipments:"BLs",nav_containers:"Contentores",nav_settings:"Dados",
     dash_title:"Painel",dash_sub:"Despacho de contentores Porto de Beira · visão geral",
-    btn_new_ship:"+ Novo BL",btn_new_cust:"+ Novo cliente",btn_new_cont:"+ Novo contentor",btn_add_cont:"+ Contentor",btn_add_land:"+ Transporte",btn_edit_ship:"Editar BL",btn_edit_cont:"Editar contentor",btn_back:"← Voltar",btn_delete:"Apagar",btn_save:"Guardar",btn_cancel:"Cancelar",btn_export_all:"Exportar tudo (JSON)",btn_export_ship:"Exportar BLs (CSV)",btn_export_cont:"Exportar contentores (CSV)",btn_clear_all:"Limpar tudo",btn_load_demo:"Carregar dados demo",admin_only_hint:"Apenas o administrador pode: importar ficheiros, carregar demo, limpar tudo. Contacte o chefe se precisar.",admin_only_denied:"Sem permissão: apenas administrador",
+    btn_new_ship:"+ Novo BL",btn_new_cust:"+ Novo cliente",btn_new_cont:"+ Novo contentor",btn_add_cont:"+ Contentor",btn_edit_ship:"Editar BL",btn_edit_cont:"Editar contentor",btn_back:"← Voltar",btn_delete:"Apagar",btn_save:"Guardar",btn_cancel:"Cancelar",btn_export_all:"Exportar tudo (JSON)",btn_export_ship:"Exportar BLs (CSV)",btn_export_cont:"Exportar contentores (CSV)",btn_clear_all:"Limpar tudo",btn_load_demo:"Carregar dados demo",admin_only_hint:"Apenas o administrador pode: importar ficheiros, carregar demo, limpar tudo. Contacte o chefe se precisar.",admin_only_denied:"Sem permissão: apenas administrador",
     kpi_ship:"BLs / Contentores",kpi_port_warn:"Alerta de porto",kpi_port_warn_sub:"≤3 dias / expirado",kpi_receivable:"A receber",kpi_trip:"Doc cliente pendente",kpi_trip_sub:"Triplicado não entregue",kpi_margin:"Margem do mês",kpi_margin_sub:"BLs concluídos",
     dash_table:"Lista de BLs (por ETA)",dash_overdue:"Alerta de dívida",
     filter_all:"Todos estados",filter_all_cust:"Todos clientes",ms_all:"Todos",ms_none:"Limpar",ms_placeholder:"Escolher estados…",
     th_trip:"Doc cliente",th_tripdate:"Entregue em",
+    th_recvable:"A receber/cont",th_received:"Recebido/cont",th_cost:"Custo/cont",th_profit:"Margem/cont",th_received_date:"Data recebido",
     trip_title:"DU de Cliente (Triplicado)",trip_status_pending:"⏳ Pendente",trip_status_done:"✅ Entregue",trip_mark_btn:"Marcar como entregue",trip_undo_btn:"Desfazer",trip_delivered_at:"Data entrega",trip_note:"Obs (ex: entrega no local / WeChat / retirado pelo cliente)",trip_pending_hint:"O triplicado da DU ainda não foi entregue ao cliente · Necessário para levantar contentores no porto da Beira",
     th_bl:"BL",th_customer:"Cliente",th_product:"Produto",th_cnt:"Qtd",th_status:"Estado",th_eta:"ETA",th_portdays:"Porto",th_recv:"A receber",th_paid:"Recebido",th_margin:"Margem",th_act:"Acção",
-    th_node:"Nó",th_amt:"Valor",th_due:"Vencimento",th_name:"Nome",th_biz:"Negócio",th_terms:"Termos",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
+    th_name:"Nome",th_biz:"Negócio",th_debt:"Dívida",th_hs:"HS",th_route:"Origem→Destino",th_contno:"Nº Contentor",th_boxtype:"Tipo",th_pickup:"Levant.",th_delivery:"Entrega",
     cust_title:"Clientes",cust_sub:"Patrões chineses em Moçambique + clientes individuais",ph_search_cust:"Pesquisar nome",
     ship_title:"BLs",ship_sub:"Cada BL = uma carga · vários contentores",ph_search_ship:"Pesquisar BL/produto/HS/contentor",
     cont_title:"Contentores",cont_sub:"Todos os contentores",ph_search_cont:"Pesquisar contentor/BL",
     detail_base:"Info do BL",detail_summary:"Resumo",detail_containers:"Contentores deste BL",
     tab_docs:"Documentos",tab_payment:"Receber/Pago",tab_costs:"Custo/Margem",tab_milestones:"Etapas",tab_comms:"Comunicação",tab_trip:"Doc cliente",
-    cd_base:"Info contentor",cd_summary:"Resumo",cd_land:"Transporte terrestre",cd_title:"Detalhe do contentor",
-    set_title:"Gestão de dados",set_sub:"Importar/Exportar/Reset",set_export:"Exportar",set_import:"Importar",set_demo:"Dados demo",set_demo_sub:"6 clientes + 6 BLs (1/2/3/7/11 contentores), vários estados, com registos de transporte.",set_danger:"Acção perigosa",
+    cd_base:"Info contentor",cd_summary:"Resumo",cd_title:"Detalhe do contentor",
+    set_title:"Gestão de dados",set_sub:"Importar/Exportar/Reset",set_export:"Exportar",set_import:"Importar",set_demo:"Dados demo",set_demo_sub:"6 clientes + 6 BLs (1/2/3/7/11 contentores), cada contentor com A receber / Custo / Recebido por contentor (Receber/Recebido só admin).",set_danger:"Acção perigosa",
     st_in_transit:"Em trânsito",st_at_port:"No porto",st_clearing:"Despachando",st_released:"Liberado",st_landtransport:"Em transporte",st_delivered:"Concluído",st_on_hold:"Suspenso",st_cancelled:"Cancelado",
     ms_booking:"Recebido",ms_loading:"Embarcado",ms_sea:"Em trânsito",ms_arrival:"Chegada",ms_declaration:"Declaração",ms_inspection:"Inspecção",ms_release:"Liberado",ms_pickup:"Levantado",ms_land:"Transportado",ms_done:"Concluído",
     doc_invoice:"Factura comercial",doc_packing:"Lista de embalagem",doc_bl:"BL marítimo",doc_co:"Certificado de origem",doc_ciq:"CIQ/Inspecção pré-embarque",doc_fumi:"Certificado fumigação",doc_insurance:"Seguro",doc_permit:"Licença importação",
     doc_icr:"Relatório ICR",doc_seal_record:"Registo de selo",doc_container_photo:"Foto do contentor",
-    cost_tariff:"Aduana",cost_iva:"CIVA/IVA",cost_agent:"Agente",cost_inspect:"Inspecção",cost_translate:"Tradução",cost_co_agent:"Cert. origem",cost_misc:"Outros",cost_pickup:"Levantamento",cost_delivery:"Entrega",cost_storage:"Armazenagem",cost_land:"Transporte",
-    pt_prepay:"100% adiantado",pt_split_50:"50% + restante",pt_split_30:"30% + restante",pt_credit_30:"30 dias crédito",pt_credit_60:"60 dias crédito",
     port_normal:"Normal",port_warn:"⚠ A expirar",port_over:"Expirado",port_critical:"Crítico",
     ct_boss:"Patrão chinês",ct_individual:"Individual",
     cnt:"unid.",count_unit:"cont.",ship_count_label:"BL",
-    land_record:"Transporte",add_land:"+ Adicionar transporte",
     hidden_admin:"[só admin]",
     // Validação de formulário (v3.0.10 i18n)
     err_cust_required:"Indique o nome do cliente",err_bl_required:"Indique o nº BL",err_cont_required:"Indique o nº do contentor",
-    err_plate_required:"Indique a matrícula",err_amount_required:"Indique o valor",err_landfee_required:"Indique o valor do transporte",
+    err_amount_required:"Indique o valor",
     note_saved:"Observação guardada",
     // Depósito (v3.0.11)
     deposit_title:"Depósito do Contentor",deposit_section:"Informação do Depósito",
@@ -686,7 +674,6 @@ const I18N={
     empty_shipment_containers:'Sem contentores · Clique em "+ Adicionar contentor"',
     empty_comms:"Sem comunicações",
     empty_containers:"Sem contentores",empty_containers_filtered:"Sem contentores correspondentes",
-    empty_land_records:"Sem registos de transporte",
     // Hint KPI + lembrete de cobrança (v3.0.13)
     kpi_jump_hint:"Clique para ver →",
     btn_copy_reminder:"Lembrete de cobrança",
@@ -745,8 +732,7 @@ const CONT_DOC_TYPES=[
   {key:'container_photo',name:'柜子照片',pt:'Foto'}
 ];
 
-const SHARED_COST_TYPES=['关税','CIVA/IVA','代理费','查验费','翻译费','原产地证代办','杂费'];
-const CONT_COST_TYPES=['提货费','派送费','仓储/滞港费','陆运费'];
+// v5.0：SHARED_COST_TYPES / CONT_COST_TYPES 已删除（成本直接录入每柜 cost）
 
 const STATUS_LABEL={in_transit:'在途',at_port:'在港',clearing:'清关中',released:'已放行',landtransport:'已陆运',delivered:'已完结',on_hold:'挂起',cancelled:'已取消'};
 const STATUS_CLASS={in_transit:'s-info',at_port:'s-info',clearing:'s-warning',released:'s-success',landtransport:'s-info',delivered:'s-success',on_hold:'s-warning',cancelled:'s-neutral'};
@@ -869,16 +855,12 @@ function portDaysClass(c){
   return{c:'normal',label:`${d}天`,d};
 }
 function shipmentTotals(s){
-  const receivable=(s.paymentSchedule||[]).reduce((sum,p)=>sum+Number(p.amount||0),0);
-  const received=(s.paymentSchedule||[]).reduce((sum,p)=>sum+Number(p.paidAmount||0),0);
-  const sharedCost=(s.sharedCosts||[]).reduce((sum,x)=>sum+Number(x.amount||0),0);
-  const contCost=(s.containers||[]).reduce((sum,c)=>sum+(c.containerCosts||[]).reduce((a,x)=>a+Number(x.amount||0),0),0);
-  const landCost=(s.containers||[]).reduce((sum,c)=>sum+(c.landTransportRecords||[]).reduce((a,x)=>a+Number(x.fee||0),0),0);
-  const totalCost=sharedCost+contCost+landCost;
-  const margin=received-totalCost;
-  // 收入：清关费总额（按柜清关费 = 应收/柜数，简化：从 declaredValue 推算）
-  const revenue=Number(s.declaredValue||0);  // 这里实际应是 应收清关费 (从 customer 配的费率算)
-  return{receivable,received,sharedCost,contCost,landCost,totalCost,margin,revenue};
+  // v5.0 模型：每柜独立字段，整单汇总
+  const receivable=(s.containers||[]).reduce((sum,c)=>sum+Number(c.receivable||0),0);
+  const received=(s.containers||[]).reduce((sum,c)=>sum+Number(c.received||0),0);
+  const cost=(s.containers||[]).reduce((sum,c)=>sum+Number(c.cost||0),0);
+  const profit=receivable-cost;  // 老板专属
+  return{receivable,received,cost,profit};
 }
 function shipmentStatus(s){
   const ms=s.shipMilestones||[];
@@ -911,30 +893,8 @@ function shipmentStatus(s){
 }
 
 // ============================================================
-// 应收节点生成
+// v5.0：旧的 generatePaymentSchedule 已删除（应收款改为每柜手动录入，不再自动算节点）
 // ============================================================
-function generatePaymentSchedule(customer,shipment){
-  if(!customer)return[];
-  const total=Number(shipment.declaredValue||0);if(!total)return[];
-  const terms=customer.paymentTerms||{type:'split'};
-  const today=new Date();
-  const etd=shipment.etd?new Date(shipment.etd):null;
-  const eta=shipment.eta?new Date(shipment.eta):null;
-  function dateOffset(base,days){const d=new Date(base||today);d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
-  if(terms.type==='prepay')return[{name:'装船前付清',pt:'100% antes embarque',pct:100,amount:total,dueDate:etd?dateOffset(etd,-3):dateOffset(today,3),paid:false,paidDate:'',paidAmount:0,notes:''}];
-  if(terms.type==='split'){
-    const prepayPct=Number(terms.prepayPct||50);
-    return[
-      {name:`订舱金 ${prepayPct}%`,pt:`Adiantamento ${prepayPct}%`,pct:prepayPct,amount:total*prepayPct/100,dueDate:etd?dateOffset(etd,-7):dateOffset(today,3),paid:false,paidDate:'',paidAmount:0,notes:''},
-      {name:`提货前付清 ${100-prepayPct}%`,pt:`Restante ${100-prepayPct}%`,pct:100-prepayPct,amount:total*(100-prepayPct)/100,dueDate:eta?dateOffset(eta,1):dateOffset(today,30),paid:false,paidDate:'',paidAmount:0,notes:''}
-    ];
-  }
-  if(terms.type==='credit'){
-    const cd=Number(terms.creditDays||30);
-    return[{name:`月结${cd}天付清`,pt:`Crédito ${cd}d`,pct:100,amount:total,dueDate:eta?dateOffset(eta,cd):dateOffset(today,cd),paid:false,paidDate:'',paidAmount:0,notes:''}];
-  }
-  return[];
-}
 
 // ============================================================
 // 全局状态 + 初始化
@@ -957,19 +917,24 @@ function newCont(){
     freeDays:21,actualArrivalDate:'',pickupDate:'',deliveryDate:'',currentStage:'booking',
     contMilestones:CONT_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
     containerDocs:CONT_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
-    containerCosts:[],landTransportRecords:[],
+    // v5.0 财务字段：应收款/实收 = 老板专属；成本 = 所有人可填可看
+    receivable:0,currencyRecv:'MZN',  // 应收款（清关费，老板填）
+    cost:0,currencyCost:'MZN',          // 成本（含陆运，所有人填）
+    received:0,currencyReceived:'MZN',  // 实收（老板填）
+    receivedDate:'',                    // 已收日期
     // 押金（v3.0.11）— 大部分柜为空，少数柜有押金
     deposit:{amount:0,currency:'MZN',status:'none',collectedAt:'',refundedAt:'',
       collectedProof:[],paidToShipProof:[],shipRefundedProof:[],refundedToClientProof:[]}
   };
 }
-function newShip(id,blNo,custId,productDesc,hsCode,declaredValue,vessel,voyage,etd,eta,originPort,destPort,notes,freeDays){
+function newShip(id,blNo,custId,productDesc,hsCode,vessel,voyage,etd,eta,originPort,destPort,notes,freeDays){
   return {
-    id,blNo,customerId:custId,productDesc,hsCode,declaredValue,currency:'USD',originPort,destPort,vessel,voyage,etd,eta,freeDays:Number(freeDays||21),
+    id,blNo,customerId:custId,productDesc,hsCode,originPort,destPort,vessel,voyage,etd,eta,freeDays:Number(freeDays||21),
     shipMilestones:SHIP_STAGES.map(s=>({stage:s.key,status:'pending',plannedDate:'',actualDate:'',notes:''})),
     sharedDocs:SHARED_DOC_TYPES.map(d=>({docType:d.key,status:'pending',receivedDate:'',notes:''})),
-    sharedCosts:[],communications:[],containers:[],paymentSchedule:[],notes,
+    communications:[],containers:[],
     triplicadoDelivered:false,triplicadoDeliveredAt:'',triplicadoNote:'',
+    notes,
     createdAt:nowISO(),updatedAt:nowISO()
   };
 }
@@ -981,30 +946,32 @@ function loadDemoData(){
   if(!isAdmin()){alert(t('admin_only_denied'));return;}
   if(!confirm('清空现有数据并加载演示数据？'))return;
   const customers=[
-    {id:'c1',name:'CHICUMBANE 投资有限公司',namePt:'CHICUMBANE INVESTIMENTOS, LDA',wechat:'qi-chicumbane',phone:'+258 84 111 2222',address:'CHICUMBANE 投资区',business:'建材/投资',paymentTerms:{type:'credit',creditDays:30},overdueCount:0,notes:'原表 CHICUMBANE INVESTIMENTOS, LDA',createdAt:'2025-01-10'},
-    {id:'c2',name:'贝拉塑料厂',namePt:'FLEXIVEL PLASTICA, LDA',wechat:'zhang-plastico',phone:'+258 84 222 3333',address:'贝拉工业园',business:'塑料颗粒（免税）',paymentTerms:{type:'split',prepayPct:50},overdueCount:0,notes:'原表 FLEXIVEL PLASTICA,LDA, 免税票',createdAt:'2025-03-15'},
-    {id:'c3',name:'SOL 超市',namePt:'SUPERMERCADO SOL, LIMITADA',wechat:'sol-supermarket',phone:'+258 84 333 4444',address:'贝拉中心区',business:'超市日用品',paymentTerms:{type:'prepay'},overdueCount:0,notes:'原表 SUPERMERCADO SOL, LIMITADA',createdAt:'2025-02-20'},
-    {id:'c4',name:'NEWSPEED 贸易',namePt:'NEWSPEED INTERNATIONAL LIMITED',wechat:'newspeed-trade',phone:'+258 84 444 5555',address:'贝拉新城',business:'电子产品',paymentTerms:{type:'split',prepayPct:50},overdueCount:0,notes:'原表 NEWSPEED INTERNATIONAL LIMITED',createdAt:'2025-04-05'},
-    {id:'c5',name:'FELIZ 超市',namePt:'SUPERMERCADO FELIZ SHOPPING/BEIRA',wechat:'feliz-beira',phone:'+258 84 555 6666',address:'贝拉 BEIRA 商业区',business:'超市百货',paymentTerms:{type:'credit',creditDays:30},overdueCount:2,notes:'原表 SUPERMERCADO FELIZ SHOPPING/BEIRA',createdAt:'2025-05-12'},
-    {id:'c6',name:'MIL 超市',namePt:'SUPERMERCADO MIL, LIMITADA',wechat:'mil-supermarket',phone:'+258 84 666 7777',address:'贝拉 MIL 区',business:'超市小家电',paymentTerms:{type:'prepay'},overdueCount:0,notes:'原表 SUPERMERCADO MIL, LIMITADA',createdAt:'2025-06-18'}
+    {id:'c1',name:'CHICUMBANE 投资有限公司',namePt:'CHICUMBANE INVESTIMENTOS, LDA',wechat:'qi-chicumbane',phone:'+258 84 111 2222',address:'CHICUMBANE 投资区',business:'建材/投资',overdueCount:0,notes:'原表 CHICUMBANE INVESTIMENTOS, LDA',createdAt:'2025-01-10'},
+    {id:'c2',name:'贝拉塑料厂',namePt:'FLEXIVEL PLASTICA, LDA',wechat:'zhang-plastico',phone:'+258 84 222 3333',address:'贝拉工业园',business:'塑料颗粒（免税）',overdueCount:0,notes:'原表 FLEXIVEL PLASTICA,LDA, 免税票',createdAt:'2025-03-15'},
+    {id:'c3',name:'SOL 超市',namePt:'SUPERMERCADO SOL, LIMITADA',wechat:'sol-supermarket',phone:'+258 84 333 4444',address:'贝拉中心区',business:'超市日用品',overdueCount:0,notes:'原表 SUPERMERCADO SOL, LIMITADA',createdAt:'2025-02-20'},
+    {id:'c4',name:'NEWSPEED 贸易',namePt:'NEWSPEED INTERNATIONAL LIMITED',wechat:'newspeed-trade',phone:'+258 84 444 5555',address:'贝拉新城',business:'电子产品',overdueCount:0,notes:'原表 NEWSPEED INTERNATIONAL LIMITED',createdAt:'2025-04-05'},
+    {id:'c5',name:'FELIZ 超市',namePt:'SUPERMERCADO FELIZ SHOPPING/BEIRA',wechat:'feliz-beira',phone:'+258 84 555 6666',address:'贝拉 BEIRA 商业区',business:'超市百货',overdueCount:2,notes:'原表 SUPERMERCADO FELIZ SHOPPING/BEIRA, 历史拖欠 2 次',createdAt:'2025-05-12'},
+    {id:'c6',name:'MIL 超市',namePt:'SUPERMERCADO MIL, LIMITADA',wechat:'mil-supermarket',phone:'+258 84 666 7777',address:'贝拉 MIL 区',business:'超市小家电',overdueCount:0,notes:'原表 SUPERMERCADO MIL, LIMITADA',createdAt:'2025-06-18'}
   ];
   const shipments=[];
 
   // ====== sh1: 齐总 11 柜 - 已签收 ======
-  let sh=newShip('sh1','COSU6400060160','c1','建材钢材 + 五金配件','7308.30',128000,'COSCO SHIPPING UNIVERSE','CS2024-15W','2025-01-02','2025-01-18','Shanghai','Beira','原表第 14 行 11x20GP，已签收',21);
+  let sh=newShip('sh1','COSU6400060160','c1','建材钢材 + 五金配件','7308.30','COSCO SHIPPING UNIVERSE','CS2024-15W','2025-01-02','2025-01-18','Shanghai','Beira','原表第 14 行 11x20GP，已签收',21);
   ['booking','loading','sea','arrival','declaration','release'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2024-12-28':k==='loading'?'2025-01-02':k==='sea'?'2025-01-18':k==='arrival'?'2025-01-19':k==='declaration'?'2025-01-22':'2025-01-25';});
   ['invoice','packing','bl','co'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2025-01-05';});
   // sh1 齐总：已签收且单据已交客户
   sh.triplicadoDelivered=true;
   sh.triplicadoDeliveredAt='2025-01-26T10:30:00.000Z';
   sh.triplicadoNote='现场交给齐总本人，已签收';
-  sh.sharedCosts.push({type:'关税',amount:725000,currency:'MZN'},{type:'CIVA/IVA',amount:1040000,currency:'MZN'},{type:'代理费',amount:45000,currency:'MZN'});
   ['CAXU6118993','NEXU1523118','TDRU2908010','TDRU3445645','TRLU9106829','TDRU3147229','TDRU3294220','TCKU3844095','TDRU0631100','TCKU2155717','TDRU3297810'].forEach((no,i)=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='20GP';ct.weight='22吨';ct.volume='28CBM';ct.freeDays=21;
     ct.actualArrivalDate='2025-01-19';ct.pickupDate='2025-01-24';ct.deliveryDate='2025-01-26';
     ct.contMilestones.forEach(m=>{m.status='done';m.actualDate=m.stage==='pickup'?'2025-01-24':m.stage==='landtransport'?'2025-01-25':'2025-01-26';});
-    ct.containerCosts.push({type:'提货费',amount:1200,currency:'MZN'},{type:'派送费',amount:3500,currency:'MZN'});
-    ct.landTransportRecords=[{id:uid(),plateNo:'MOC-AAA-111',driverName:'António',driverPhone:'+258 84 555 1234',destination:'CHICUMBANE 工地',fee:3500,currency:'MZN',scheduledDate:'2025-01-25',completedDate:'2025-01-26',notes:'11柜同一辆平板分两次拉'}];
+    // v5.0 财务字段（每柜独立）
+    ct.receivable=45000;ct.currencyRecv='MZN';
+    ct.cost=170000;ct.currencyCost='MZN';          // 关税+IVA+代理+提货+派送+陆运 合并
+    ct.received=45000;ct.currencyReceived='MZN';
+    ct.receivedDate='2025-02-15';                  // 已收齐
     // 押金示例 1：第一个柜已收 + 已退（全流程 4 个凭证位都填）
     if(i===0){
       ct.deposit={amount:8000,currency:'MZN',status:'refunded',collectedAt:'2025-01-19T08:00:00.000Z',refundedAt:'2025-02-20T14:30:00.000Z',
@@ -1015,16 +982,19 @@ function loadDemoData(){
   shipments.push(sh);
 
   // ====== sh2: 老张 7 柜免税 - 在港 20 天 ======
-  sh=newShip('sh2','XMN500126200','c2','PE 塑料颗粒 + 再生塑料膜（免税）','3901.10',86000,'PIL GUANGZHOU','PG2025-22E','2026-06-12','2026-06-22','Xiamen','Beira','原表第 133 行 7x40GP，在港 20 天',21);
+  sh=newShip('sh2','XMN500126200','c2','PE 塑料颗粒 + 再生塑料膜（免税）','3901.10','PIL GUANGZHOU','PG2025-22E','2026-06-12','2026-06-22','Xiamen','Beira','原表第 133 行 7x40GP，在港 20 天',21);
   ['booking','loading','sea','arrival','declaration','release'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-06-08':k==='loading'?'2026-06-12':k==='sea'?'2026-06-22':k==='arrival'?'2026-07-15':k==='declaration'?'2026-07-18':'2026-07-22';});
   ['invoice','packing','bl','co'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-06-15';});
   // sh2 老张：已放行但单据还没交（仓库说客户下周一取）
-  sh.sharedCosts.push({type:'关税',amount:0,currency:'MZN',notes:'免税'},{type:'CIVA/IVA',amount:0,currency:'MZN',notes:'免税'},{type:'代理费',amount:38000,currency:'MZN'});
   ['PCIU9123217','PCIU9158825','PIDU4030578','UETU5981499','PIDU4214030','TCNU6202262','PIDU4114072'].forEach((no,i)=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='26吨';ct.volume='58CBM';ct.freeDays=14;
     ct.actualArrivalDate='2026-07-15';
     ct.contMilestones.forEach(m=>{m.status='pending';});
-    ct.containerCosts.push({type:'仓储/滞港费',amount:6000,currency:'MZN',notes:`第${i+1}柜滞港`});
+    // v5.0 财务字段（免税，但有滞港费；老张 50% 预付已收）
+    ct.receivable=55000;ct.currencyRecv='MZN';
+    ct.cost=6000;ct.currencyCost='MZN';           // 仅滞港费 6000 MZN/柜
+    ct.received=27500;ct.currencyReceived='MZN';   // 50% 预付
+    ct.receivedDate='2026-06-10';
     // 押金示例 2：第二个柜已收 5000 USD 未退（演示中间状态）
     if(i===1){
       ct.deposit={amount:5000,currency:'USD',status:'collected',collectedAt:'2026-07-22T10:00:00.000Z',refundedAt:'',
@@ -1035,68 +1005,68 @@ function loadDemoData(){
   shipments.push(sh);
 
   // ====== sh3: 索总 3 柜 - 清关中 ======
-  sh=newShip('sh3','NGP2241850','c3','超市货架 + 日用品 + 食品','9403.20',52000,'CMA CGM JACQUES','CM2025-19E','2026-07-20','2026-07-30','Shanghai','Beira','原表第 91 行 3x40HQ，清关中',21);
+  sh=newShip('sh3','NGP2241850','c3','超市货架 + 日用品 + 食品','9403.20','CMA CGM JACQUES','CM2025-19E','2026-07-20','2026-07-30','Shanghai','Beira','原表第 91 行 3x40HQ，清关中',21);
   ['booking','loading','sea','arrival','declaration'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-15':k==='loading'?'2026-07-20':k==='sea'?'2026-07-30':'2026-07-30';});
   sh.shipMilestones.find(m=>m.stage==='declaration').notes='海关查验中';
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-30';});
-  sh.sharedCosts.push({type:'关税',amount:340000,currency:'MZN'},{type:'CIVA/IVA',amount:498000,currency:'MZN'},{type:'代理费',amount:24000,currency:'MZN'});
   ['TCLU1872916','UETU7183630','TRLU7120710'].forEach(no=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40HQ';ct.weight='24吨';ct.volume='64CBM';ct.freeDays=21;
     ct.actualArrivalDate='2026-07-30';
+    // v5.0 财务字段（索总全预付已收）
+    ct.receivable=65000;ct.currencyRecv='MZN';
+    ct.cost=350000;ct.currencyCost='MZN';          // 关税+IVA+代理 分摊/柜
+    ct.received=65000;ct.currencyReceived='MZN';   // 全预付
+    ct.receivedDate='2026-07-25';
     sh.containers.push(ct);
   });
   shipments.push(sh);
 
   // ====== sh4: 吴总 2 柜 - 在港 ======
-  sh=newShip('sh4','COSU6411801900','c4','手机配件 + 电子产品','8517.62',38000,'COSCO SHIPPING','CS2025-15E','2026-07-10','2026-07-25','Shenzhen','Beira','原表第 87 行 2x40GP，在港',21);
+  sh=newShip('sh4','COSU6411801900','c4','手机配件 + 电子产品','8517.62','COSCO SHIPPING','CS2025-15E','2026-07-10','2026-07-25','Shenzhen','Beira','原表第 87 行 2x40GP，在港',21);
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-05':k==='loading'?'2026-07-10':'2026-07-26';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-26';});
-  sh.sharedCosts.push({type:'关税',amount:218000,currency:'MZN'},{type:'CIVA/IVA',amount:312000,currency:'MZN'},{type:'代理费',amount:18000,currency:'MZN'});
   ['CSNU7166077','CSNU6820352'].forEach(no=>{
     let ct=newCont();ct.containerNo=no;ct.boxType='40GP';ct.weight='22吨';ct.volume='54CBM';ct.freeDays=21;
     ct.actualArrivalDate='2026-07-26';
+    // v5.0 财务字段（吴总 50% 预付已收）
+    ct.receivable=70000;ct.currencyRecv='MZN';
+    ct.cost=350000;ct.currencyCost='MZN';
+    ct.received=35000;ct.currencyReceived='MZN';   // 50% 预付
+    ct.receivedDate='2026-07-08';
     sh.containers.push(ct);
   });
   shipments.push(sh);
 
   // ====== sh5: 林总 1 柜 - 拖欠 ======
-  sh=newShip('sh5','TXSV51253400','c5','超市百货 + 食品 + 日化','4901.99',21000,'PIL HONG KONG','PH2026-31E','2026-07-12','2026-07-27','Shanghai','Beira','原表第 167 行 1x40GP，林总拖欠，月结到期未付',21);
+  sh=newShip('sh5','TXSV51253400','c5','超市百货 + 食品 + 日化','4901.99','PIL HONG KONG','PH2026-31E','2026-07-12','2026-07-27','Shanghai','Beira','原表第 167 行 1x40GP，林总拖欠，月结到期未付',21);
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-08':k==='loading'?'2026-07-12':k==='sea'?'2026-07-25':'2026-07-25';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-25';});
-  sh.sharedCosts.push({type:'关税',amount:124000,currency:'MZN'},{type:'CIVA/IVA',amount:178000,currency:'MZN'},{type:'代理费',amount:12000,currency:'MZN'});
   let ct5=newCont();ct5.containerNo='PIDU4122015';ct5.boxType='40GP';ct5.weight='22吨';ct5.volume='56CBM';ct5.freeDays=21;
   ct5.actualArrivalDate='2026-07-25';
-  // sh5 没有陆运记录（演示"未提货→未陆运"）
+  // v5.0 财务字段（林总拖欠，整票未付）
+  ct5.receivable=60000;ct5.currencyRecv='MZN';
+  ct5.cost=340000;ct5.currencyCost='MZN';
+  ct5.received=0;ct5.currencyReceived='MZN';
+  ct5.receivedDate='';                              // 未收
   sh.containers.push(ct5);
   shipments.push(sh);
 
   // ====== sh6: 米总 1 柜 - 在港 ======
-  sh=newShip('sh6','YIZC50228200','c6','超市日用品 + 小家电','8516.71',18500,'PIL KAOHSIUNG','PK2026-31E','2026-07-13','2026-07-28','Shanghai','Beira','原表第 170 行 1x40GP，米总在港待放行',21);
+  sh=newShip('sh6','YIZC50228200','c6','超市日用品 + 小家电','8516.71','PIL KAOHSIUNG','PK2026-31E','2026-07-13','2026-07-28','Shanghai','Beira','原表第 170 行 1x40GP，米总在港待放行',21);
   ['booking','loading','sea','arrival'].forEach(k=>{sh.shipMilestones.find(m=>m.stage===k).status='done';sh.shipMilestones.find(m=>m.stage===k).actualDate=k==='booking'?'2026-07-09':k==='loading'?'2026-07-13':k==='sea'?'2026-07-28':'2026-07-28';});
   ['invoice','packing','bl'].forEach(k=>{const d=sh.sharedDocs.find(x=>x.docType===k);d.status='received';d.receivedDate='2026-07-28';});
-  sh.sharedCosts.push({type:'关税',amount:108000,currency:'MZN'},{type:'CIVA/IVA',amount:155000,currency:'MZN'},{type:'代理费',amount:12000,currency:'MZN'});
   let ct6=newCont();ct6.containerNo='PCIU9258172';ct6.boxType='40GP';ct6.weight='20吨';ct6.volume='52CBM';ct6.freeDays=21;
   ct6.actualArrivalDate='2026-07-28';
+  // v5.0 财务字段（米总全预付已收）
+  ct6.receivable=55000;ct6.currencyRecv='MZN';
+  ct6.cost=300000;ct6.currencyCost='MZN';
+  ct6.received=55000;ct6.currencyReceived='MZN';
+  ct6.receivedDate='2026-07-20';
   sh.containers.push(ct6);
   shipments.push(sh);
 
-  // ====== 生成应收节点 ======
-  shipments.forEach(s=>{
-    const cust=customers.find(x=>x.id===s.customerId);
-    s.paymentSchedule=generatePaymentSchedule(cust,s);
-  });
-  // sh1 已签收 → 全部已收
-  {let s=shipments[0];if(shipmentStatus(s)==='delivered'){s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2025-02-15';p.paidAmount=p.amount;});}}
-  // sh2 老张 50% 预付已收
-  {let s=shipments[1];if(s.paymentSchedule[0]){s.paymentSchedule[0].paid=true;s.paymentSchedule[0].paidDate='2026-06-10';s.paymentSchedule[0].paidAmount=s.paymentSchedule[0].amount;}}
-  // sh3 索总 全预付
-  {let s=shipments[2];s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2026-07-25';p.paidAmount=p.amount;});}
-  // sh4 吴总 50% 预付
-  {let s=shipments[3];if(s.paymentSchedule[0]){s.paymentSchedule[0].paid=true;s.paymentSchedule[0].paidDate='2026-07-08';s.paymentSchedule[0].paidAmount=s.paymentSchedule[0].amount;}}
-  // sh5 林总 拖欠 — 整票未付 + dueDate 已过期
-  {let s=shipments[4];s.paymentSchedule.forEach(p=>{p.paid=false;p.paidDate='';p.paidAmount=0;p.dueDate='2026-07-30';p.notes='林总历史拖欠 2 次，催了 3 次还没打款';});}
-  // sh6 米总 全预付
-  {let s=shipments[5];s.paymentSchedule.forEach(p=>{p.paid=true;p.paidDate='2026-07-20';p.paidAmount=p.amount;});}
+  // sh5 林总历史拖欠 2 次 + 现在又新增 1 次未付 = 累计 3 次
+  customers.find(x=>x.id==='c5').overdueCount=3;
 
   data={customers,shipments,activities:[],users:DEFAULT_USERS,settings:{lang:LANG}};
   saveData();
@@ -1204,17 +1174,27 @@ function renderDashboard(){
   // 滞港预警：剩余≤3 或 已超期
   let warnCount=0;allContainers.forEach(c=>{const p=portDaysClass(c);if(p&&(p.c==='warn'||p.c==='over'||p.c==='critical'))warnCount++;});
   document.getElementById('kpi-overdue-port').textContent=warnCount;
-  // 应收未收
+  // 应收未收（v5.0：从每个柜的 receivable 减 received 算每柜欠款）
   let totalRecv=0,overdueNodes=0;
-  shipments.forEach(s=>{(s.paymentSchedule||[]).forEach(p=>{if(!p.paid){totalRecv+=Number(p.amount||0);if(p.dueDate&&new Date(p.dueDate)<new Date())overdueNodes++;}});});
+  shipments.forEach(s=>{
+    (s.containers||[]).forEach(c=>{
+      const recv=Number(c.receivable||0),paid=Number(c.received||0),remain=recv-paid;
+      if(remain>0){
+        totalRecv+=remain;
+        // 已收日期超过 30 天算逾期
+        const lastReceived=c.receivedDate?new Date(c.receivedDate):null;
+        if(lastReceived&&((Date.now()-lastReceived.getTime())/(86400000))>30)overdueNodes++;
+      }
+    });
+  });
   document.getElementById('kpi-receivable').textContent=fmtMoney(totalRecv);
-  document.getElementById('kpi-receivable-sub').textContent=overdueNodes+' '+t('th_node')+' '+t('dash_overdue').toLowerCase();
+  document.getElementById('kpi-receivable-sub').textContent=overdueNodes+' '+t('cnt')+' '+t('dash_overdue').toLowerCase();
   // 待交客户单据（Triplicado）— 只算已"放行/陆运/完结"但单据还没交的
   const tripPending=shipments.filter(s=>!s.triplicadoDelivered&&['released','landtransport','delivered'].includes(shipmentStatus(s))).length;
   document.getElementById('kpi-trip-pending').textContent=tripPending;
   document.getElementById('kpi-trip-pending-sub').textContent=tripPending?t('trip_pending_hint').slice(0,30):t('kpi_trip_sub');
-  // 毛利
-  const monthMargin=shipments.filter(s=>s.deliveryDate&&(s.deliveryDate||'').startsWith(month)||shipmentStatus(s)==='delivered').reduce((sum,s)=>sum+shipmentTotals(s).margin,0);
+  // 毛利（v5.0：从每个柜的 receivable - cost 汇总）
+  const monthMargin=shipments.reduce((sum,s)=>sum+shipmentTotals(s).profit,0);
   document.getElementById('kpi-margin').textContent=canSeeIncome()?fmtMoney(monthMargin):mask(monthMargin);
   // 未退押金（v3.0.11）— 已收客户但还没退的柜子，按币种汇总
   const pendingDeposits=allContainers.filter(c=>c.deposit&&c.deposit.status==='collected');
@@ -1247,27 +1227,31 @@ function renderDashboard(){
       ${portCell}
       <td class="num">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</td>
       <td class="num green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</td>
-      <td class="num ${tot.margin<0?'red':'green'}">${canSeeIncome()?fmtMoney(tot.margin):mask(tot.margin)}</td>
+      <td class="num ${tot.profit<0?'red':'green'}">${canSeeIncome()?fmtMoney(tot.profit):mask(tot.profit)}</td>
       <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();navigate('shipment-detail','${s.id}')">查看</button></td>
     </tr>`;
   }).join('')||`<tr><td colspan="12" class="empty">${t('empty_dash_shipments')}</td></tr>`;
-  // 欠款表
+  // 欠款表（v5.0：从每个柜 receivable-received 算出欠款柜）
   const oTbl=document.querySelector('#dash-overdue-table tbody');
   const overdueList=[];
-  shipments.forEach(s=>{(s.paymentSchedule||[]).forEach(p=>{
-    if(!p.paid&&p.dueDate){
-      overdueList.push({ship:s,node:p});
-    }
-  });});
-  oTbl.innerHTML=overdueList.slice(0,20).map(({ship,node})=>{
+  shipments.forEach(s=>{
+    (s.containers||[]).forEach(c=>{
+      const recv=Number(c.receivable||0),paid=Number(c.received||0),remain=recv-paid;
+      if(remain>0){
+        // 估算逾期：已收日期为空 OR 已收日期 > 30 天
+        const isOver=!c.receivedDate||((Date.now()-new Date(c.receivedDate).getTime())/86400000)>30;
+        overdueList.push({ship:s,container:c,remain,isOver});
+      }
+    });
+  });
+  oTbl.innerHTML=overdueList.slice(0,20).map(({ship,container,remain,isOver})=>{
     const cust=customers.find(c=>c.id===ship.customerId);
-    const isOver=node.dueDate&&new Date(node.dueDate)<new Date();
     return `<tr class="${isOver?'overdue':''}" onclick="if(!event.target.closest('a,button'))navigate('shipment-detail','${ship.id}')">
       <td><a href="#" onclick="navigate('shipment-detail','${ship.id}');return false;" style="color:var(--primary-dark);">${ship.blNo}</a></td>
       <td><a class="cust-link" onclick="event.stopPropagation();jumpToCustomer('${ship.customerId}')">${cust?cust.name:'-'}</a></td>
-      <td>${node.name}</td>
-      <td class="num">${canSeeIncome()?fmtMoney(node.amount):mask(node.amount)}</td>
-      <td class="nowrap">${fmtDate(node.dueDate)}</td>
+      <td>${container.containerNo||'-'}</td>
+      <td class="num">${canSeeIncome()?fmtMoney(remain):mask(remain)}</td>
+      <td class="nowrap">${container.receivedDate?fmtDate(container.receivedDate):'<span class="muted">从未收款</span>'}</td>
       <td class="nowrap">${isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未付</span>'}</td>
       <td class="center"><button class="btn sm" onclick="event.stopPropagation();copyReminder('${ship.id}')" data-i18n="btn_copy_reminder">催款话术</button></td>
     </tr>`;
@@ -1323,15 +1307,20 @@ function renderJumpBanner(view){
 function copyReminder(shipId){
   const s=data.shipments.find(x=>x.id===shipId);if(!s)return;
   const cust=data.customers.find(c=>c.id===s.customerId);
-  const overdueNodes=(s.paymentSchedule||[]).filter(p=>!p.paid&&p.dueDate);
-  const overdue=overdueNodes[0];
-  if(!overdue)return;
-  const days=overdue.dueDate?Math.floor((new Date()-new Date(overdue.dueDate))/86400000):0;
-  const msg=`${cust.name}总：
+  // v5.0：列出每柜未收情况，按最早未收日期/从未收款算逾期天数
+  const unpaidConts=(s.containers||[]).filter(c=>Number(c.received||0)<Number(c.receivable||0));
+  if(!unpaidConts.length)return;
+  const totalRemain=unpaidConts.reduce((a,c)=>a+(Number(c.receivable||0)-Number(c.received||0)),0);
+  // 最早未收日期 = 所有柜 receivedDate 中最早（如果是空，就当作 30 天前）
+  const earliest=unpaidConts.map(c=>c.receivedDate).filter(Boolean).sort()[0];
+  let days=null;
+  if(earliest){days=Math.max(0,Math.floor((Date.now()-new Date(earliest).getTime())/86400000));}
+  const overdueLine=days!==null?`已超过 ${days} 天`:`一直未付`;
+  const msg=`${cust.name}：
 
-BL ${s.blNo} 的 "${overdue.name}" ${fmtMoney(overdue.amount)} ${days>0?`已经逾期 ${days} 天了`:'快到期了'}，麻烦核对一下尽快安排。
+BL ${s.blNo} 的 ${unpaidConts.length} 个柜还差 ${fmtMoney(totalRemain)}（${overdueLine}），麻烦核对一下尽快安排。
 
-催一下，BEIRA 港的免费期就快到了，超期一天的仓储费也不少。
+催一下，BEIRA 港的免费期快到了，超期一天的仓储费也不少。
 
 如已付款请忽略，谢谢！
 
@@ -1349,17 +1338,18 @@ function renderCustomers(){
   const filtered=customers.filter(c=>!kw||(c.name||'').toLowerCase().includes(kw)||(c.wechat||'').toLowerCase().includes(kw)||(c.business||'').toLowerCase().includes(kw));
   tbl.innerHTML=filtered.map(c=>{
     const cnt=(data.shipments||[]).filter(s=>s.customerId===c.id).length;
-    const debt=(data.shipments||[]).filter(s=>s.customerId===c.id).reduce((sum,s)=>sum+(s.paymentSchedule||[]).filter(p=>!p.paid).reduce((a,p)=>a+p.amount,0),0);
-    const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
+    // 累计欠款 = 所有提单的每柜 receivable-received 之和
+    const debt=(data.shipments||[]).filter(s=>s.customerId===c.id).reduce((sum,s)=>{
+      return sum+(s.containers||[]).reduce((a,c)=>a+Math.max(0,Number(c.receivable||0)-Number(c.received||0)),0);
+    },0);
     return `<tr onclick="if(!event.target.closest('button')){currentCustomerId='${c.id}';navigate('customer-detail')}">
       <td><strong style="color:var(--primary-dark);cursor:pointer;">${c.name}</strong><span class="pt-tag">${c.namePt||''}</span></td>
       <td><span class="muted" style="font-size:11.5px;">${c.business||''}</span></td>
-      <td class="center">${termsLabel}</td>
       <td class="center">${cnt}</td>
       <td class="num ${debt>0?'red':'muted'}">${canSeeIncome()?fmtMoney(debt):mask(debt)}</td>
       <td class="center nowrap"><button class="btn sm" onclick="event.stopPropagation();openCustomerModal('${c.id}')">编辑</button> <button class="btn sm danger" onclick="event.stopPropagation();deleteCustomer('${c.id}')">删</button></td>
     </tr>`;
-  }).join('')||`<tr><td colspan="6" class="empty">${t('empty_customers')}</td></tr>`;
+  }).join('')||`<tr><td colspan="5" class="empty">${t('empty_customers')}</td></tr>`;
 }
 
 // 客户详情（v3.0.11）
@@ -1369,18 +1359,15 @@ function renderCustomerDetail(){
   const ships=(data.shipments||[]).filter(s=>s.customerId===c.id);
   const conts=[];ships.forEach(s=>(s.containers||[]).forEach(ct=>conts.push({...ct,shipment:s})));
   const depPending=conts.filter(ct=>ct.deposit&&ct.deposit.status==='collected').length;
-  const debt=ships.reduce((sum,s)=>sum+(s.paymentSchedule||[]).filter(p=>!p.paid).reduce((a,p)=>a+p.amount,0),0);
-  const revenue=ships.reduce((sum,s)=>{
-    const tot=shipmentTotals(s);return sum+(tot.received||0);
-  },0);
-  const termsLabel=c.paymentTerms?.type==='prepay'?t('pt_prepay'):c.paymentTerms?.type==='credit'?t(c.paymentTerms.creditDays===60?'pt_credit_60':'pt_credit_30'):t(c.paymentTerms?.prepayPct===30?'pt_split_30':'pt_split_50');
+  // v5.0：欠款 = 每柜 receivable - received 之和；累计实收 = 每柜 received 之和
+  const debt=ships.reduce((sum,s)=>sum+(s.containers||[]).reduce((a,c)=>a+Math.max(0,Number(c.receivable||0)-Number(c.received||0)),0),0);
+  const revenue=ships.reduce((sum,s)=>sum+(s.containers||[]).reduce((a,c)=>a+Number(c.received||0),0),0);
   document.getElementById('custd-title').textContent=c.name||'';
   document.getElementById('custd-sub').textContent=`${c.business||'-'}`;
   document.getElementById('custd-edit-btn').onclick=()=>openCustomerModal(c.id);
   document.getElementById('custd-base').innerHTML=`
     <div class="detail-row"><div class="k">${t('th_name')}</div><div class="v">${c.name||'-'} <span class="pt-tag">${c.namePt||''}</span></div></div>
     <div class="detail-row"><div class="k">${t('th_biz')}</div><div class="v">${c.business||'-'}</div></div>
-    <div class="detail-row"><div class="k">${t('th_terms')}</div><div class="v">${termsLabel}</div></div>
     <div class="detail-row"><div class="k">微信</div><div class="v">${c.wechat||'-'}</div></div>
     <div class="detail-row"><div class="k">电话</div><div class="v">${c.phone||'-'}</div></div>
     <div class="detail-row"><div class="k">地址</div><div class="v">${c.address||'-'}</div></div>
@@ -1444,7 +1431,7 @@ function renderShipments(){
   });
   // 指挥台点入的额外过滤（v3.0.11）
   if (dashboardJumpFilter==='active') filtered=filtered.filter(s=>shipmentStatus(s)!=='delivered');
-  else if (dashboardJumpFilter==='receivable') filtered=filtered.filter(s=>(s.paymentSchedule||[]).some(p=>!p.paid));
+  else if (dashboardJumpFilter==='receivable') filtered=filtered.filter(s=>(s.containers||[]).some(c=>Number(c.received||0)<Number(c.receivable||0)));
   else if (dashboardJumpFilter==='trippending') filtered=filtered.filter(s=>!s.triplicadoDelivered&&['released','landtransport','delivered'].includes(shipmentStatus(s)));
   else if (dashboardJumpFilter==='margin') filtered=filtered.filter(s=>shipmentStatus(s)==='delivered');
 
@@ -1503,7 +1490,6 @@ function renderShipmentDetail(){
     <div class="detail-row"><div class="k">客户</div><div class="v">${cust?cust.name:'-'} <span class="pt-tag">${cust?.namePt||''}</span></div></div>
     <div class="detail-row"><div class="k">商品</div><div class="v">${s.productDesc||'-'}</div></div>
     <div class="detail-row"><div class="k">HS</div><div class="v">${s.hsCode||'-'}</div></div>
-    <div class="detail-row"><div class="k">货值</div><div class="v">${canSeeIncome()?fmtMoney(s.declaredValue,s.currency):mask(s.declaredValue)}</div></div>
     <div class="detail-row"><div class="k">船名航次</div><div class="v">${s.vessel||''} ${s.voyage||''}</div></div>
     <div class="detail-row"><div class="k">起运→目的</div><div class="v">${s.originPort||''} → ${s.destPort||''}</div></div>
     <div class="detail-row"><div class="k">ETD / ETA</div><div class="v">${fmtDate(s.etd)} → ${fmtDate(s.eta)}</div></div>
@@ -1512,19 +1498,18 @@ function renderShipmentDetail(){
   `;
   document.getElementById('detail-summary').innerHTML=`
     <div class="detail-row"><div class="k">状态</div><div class="v"><span class="chip ${STATUS_CLASS[status]}">${t('st_'+status)}</span></div></div>
-    <div class="detail-row"><div class="k">应收</div><div class="v">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</div></div>
-    <div class="detail-row"><div class="k">实收</div><div class="v green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</div></div>
-    <div class="detail-row"><div class="k">整票成本</div><div class="v">${fmtMoney(tot.sharedCost,'MZN')}</div></div>
-    <div class="detail-row"><div class="k">按柜成本</div><div class="v">${fmtMoney(tot.contCost+tot.landCost,'MZN')}</div></div>
-    <div class="detail-row"><div class="k">毛利</div><div class="v ${tot.margin<0?'red':'green'}"><strong>${canSeeIncome()?fmtMoney(tot.margin):mask(tot.margin)}</strong></div></div>
+    <div class="detail-row"><div class="k">应收（每柜）</div><div class="v">${canSeeIncome()?fmtMoney(tot.receivable):mask(tot.receivable)}</div></div>
+    <div class="detail-row"><div class="k">实收（每柜）</div><div class="v green">${canSeeIncome()?fmtMoney(tot.received):mask(tot.received)}</div></div>
+    <div class="detail-row"><div class="k">未收</div><div class="v ${tot.receivable-tot.received>0?'red':'muted'}">${canSeeIncome()?fmtMoney(tot.receivable-tot.received):mask(tot.receivable-tot.received)}</div></div>
+    <div class="detail-row"><div class="k">总成本（每柜）</div><div class="v">${canSeeIncome()?fmtMoney(tot.cost):mask(tot.cost)}</div></div>
+    <div class="detail-row"><div class="k">毛利 = 应收 - 成本</div><div class="v ${tot.profit<0?'red':'green'}"><strong>${canSeeIncome()?fmtMoney(tot.profit):mask(tot.profit)}</strong></div></div>
   `;
   // 柜子列表
   document.getElementById('detail-containers').innerHTML=(s.containers||[]).map(c=>{
     const p=portDaysClass(c);
-    const landCnt=(c.landTransportRecords||[]).length;
     return `<div class="container-card" onclick="currentContainerId='${c.id}';navigate('container-detail','${c.id}')">
       <div class="no">${c.containerNo||'(无柜号)'}</div>
-      <div class="meta">${c.boxType||''} · ${c.weight||'-'} · ${c.volume||'-'} · ${landCnt>0?landCnt+' 陆运':'-'}</div>
+      <div class="meta">${c.boxType||''} · ${c.weight||'-'} · ${c.volume||'-'} · 成本 ${canSeeIncome()?fmtMoney(c.cost):mask(c.cost)}</div>
       <div>${p?`<span class="port-days ${p.c}">${p.label}</span>`:''}</div>
       <div class="meta">${fmtDate(c.actualArrivalDate)||''}</div>
     </div>`;
@@ -1551,49 +1536,54 @@ function renderShipmentDetail(){
     }).join('')}</div>`).join('')||'<div class="muted">无柜子</div>'}
   `;
 
-  // ====== Tab 2: 应收 ======
+  // ====== Tab 2: 应收（v5.0 按柜展示） ======
   document.getElementById('pane-payment').innerHTML=`
-    <div class="form-section">应收节点（按客户付款条款自动生成）</div>
-    ${(s.paymentSchedule||[]).map((p,i)=>{
-      const isOver=p.dueDate&&new Date(p.dueDate)<new Date()&&!p.paid;
-      return `<div class="ps-node ${isOver?'overdue':''} ${p.paid?'paid':''}">
-        <div class="name">${p.name}<small>${p.pt||''}</small></div>
-        <div class="num"><strong>${canSeeIncome()?fmtMoney(p.amount):mask(p.amount)}</strong></div>
-        <div class="muted nowrap">到期 ${fmtDate(p.dueDate)}</div>
-        <div>${p.paid?'<span class="chip s-success">已收</span>':isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未收</span>'}</div>
-        ${!p.paid?`<button class="btn sm" onclick="markPaid('${s.id}',${i})">标已收</button>`:`<span class="muted" style="font-size:11px;">${fmtDate(p.paidDate)}</span>`}
+    <div class="form-section">每柜应收/实收（老板专属可见可编辑）</div>
+    ${(s.containers||[]).map(c=>{
+      const recv=Number(c.receivable||0),paid=Number(c.received||0),remain=recv-paid;
+      const isOver=!c.receivedDate||((Date.now()-new Date(c.receivedDate).getTime())/86400000)>30;
+      return `<div class="ps-node ${remain===0?'paid':isOver?'overdue':''}">
+        <div class="name">${c.containerNo}<small>${c.boxType||''}</small></div>
+        <div class="num"><strong>${canSeeIncome()?fmtMoney(remain):mask(remain)}</strong></div>
+        <div class="muted">应收 ${canSeeIncome()?fmtMoney(recv):mask(recv)} / 实收 ${canSeeIncome()?fmtMoney(paid):mask(paid)}</div>
+        <div>${remain===0?'<span class="chip s-success">已结清</span>':isOver?'<span class="chip s-danger">逾期</span>':'<span class="chip s-warning">未付</span>'}</div>
+        ${c.receivedDate?`<span class="muted" style="font-size:11px;">${fmtDate(c.receivedDate)}</span>`:'<span class="muted" style="font-size:11px;">从未收款</span>'}
         <button class="btn sm" onclick="copyReminder('${s.id}')">催款</button>
       </div>`;
-    }).join('')||'<div class="muted">无应收节点</div>'}
-    <div style="margin-top:12px;"><button class="btn primary sm" onclick="addPaymentNode('${s.id}')">+ 添加应收节点</button></div>
+    }).join('')||'<div class="muted">无柜子</div>'}
+    <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">💡 在柜档案编辑应收/实收字段（老板专属），或直接点"+ 新建柜"</div>
   `;
 
-  // ====== Tab 3: 成本/毛利 ======
+  // ====== Tab 3: 成本（v5.0 每柜一个总数） ======
   const showIncome=canSeeIncome();
   document.getElementById('pane-costs').innerHTML=`
-    <div class="form-section">整票成本（关税/CIVA/代理费/查验费等）</div>
-    ${(s.sharedCosts||[]).map((c,i)=>`<div class="ps-node"><div class="name">${c.type}</div><div class="num"><strong>${fmtMoney(c.amount,c.currency)}</strong></div><div class="muted">${c.notes||''}</div><button class="btn sm danger" onclick="removeSharedCost('${s.id}',${i})">删</button></div>`).join('')||'<div class="muted">无整票成本</div>'}
-    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-      <select id="new-sc-type">${SHARED_COST_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
-      <input id="new-sc-amt" type="number" placeholder="金额" style="width:120px;" />
-      <input id="new-sc-notes" placeholder="备注" style="flex:1;min-width:120px;" />
-      <button class="btn primary sm" onclick="addSharedCost('${s.id}')">+ 加</button>
-    </div>
-    <div class="form-section" style="margin-top:14px;">按柜成本（提货/派送/滞港费/陆运费等）</div>
-    ${(s.containers||[]).map(c=>`
-      <div style="margin-bottom:10px;border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
-        <div style="font-weight:600;margin-bottom:5px;">${c.containerNo} · ${c.boxType}</div>
-        ${(c.containerCosts||[]).map((cc,i)=>`<div class="ps-node" style="background:var(--bg);"><div class="name">${cc.type}</div><div class="num"><strong>${fmtMoney(cc.amount,cc.currency)}</strong></div><div class="muted">${cc.notes||''}</div><button class="btn sm danger" onclick="removeContCost('${s.id}','${c.id}',${i})">删</button></div>`).join('')||'<div class="muted" style="font-size:12px;">无按柜成本</div>'}
-        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
-          <select id="cc-type-${c.id}">${CONT_COST_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
-          <input id="cc-amt-${c.id}" type="number" placeholder="金额" style="width:100px;" />
-          <button class="btn primary sm" onclick="addContCost('${s.id}','${c.id}')">+ 加</button>
+    <div class="form-section">每柜成本（含关税/IVA/代理费/陆运等所有费用，以单柜总额录入）</div>
+    ${(s.containers||[]).map(c=>{
+      const remain=Number(c.receivable||0)-Number(c.received||0);
+      const profit=Number(c.receivable||0)-Number(c.cost||0);
+      return `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:600;margin-bottom:5px;display:flex;justify-content:space-between;">
+          <span>${c.containerNo} · ${c.boxType}</span>
+          <span class="${profit<0?'red':'green'}">毛利 ${showIncome?fmtMoney(profit):mask(profit)}</span>
         </div>
-      </div>
-    `).join('')||'<div class="muted">无柜子</div>'}
-    <div class="form-section" style="margin-top:14px;">
-      <strong>${showIncome?`毛利 = 实收 ${fmtMoney(tot.received)} - 总成本 ${fmtMoney(tot.totalCost)} = <span class="${tot.margin<0?'red':'green'}">${fmtMoney(tot.margin)}</span>`:mask(tot.margin)+' '+t('hidden_admin')}</strong>
-    </div>
+        <div class="ps-node" style="background:var(--bg);">
+          <div class="name">应收款</div>
+          <div class="num"><strong>${showIncome?fmtMoney(c.receivable):mask(c.receivable)}</strong></div>
+          ${canSeeIncome()?`<button class="btn sm" onclick="openContainerModal('${s.id}','${c.id}')">编辑</button>`:''}
+        </div>
+        <div class="ps-node" style="background:var(--bg);">
+          <div class="name">成本（含陆运）</div>
+          <div class="num"><strong>${showIncome?fmtMoney(c.cost):mask(c.cost)}</strong></div>
+          <button class="btn sm" onclick="openContainerModal('${s.id}','${c.id}')">编辑</button>
+        </div>
+        ${canSeeIncome()?`<div class="ps-node" style="background:var(--bg);">
+          <div class="name">实收</div>
+          <div class="num green"><strong>${fmtMoney(c.received)}</strong></div>
+          <span class="muted" style="font-size:11px;">${c.receivedDate?fmtDate(c.receivedDate):'未收'}</span>
+        </div>`:''}
+        <div class="muted" style="font-size:11.5px;margin-top:6px;">${remain>0?`还差 ${fmtMoney(remain)}`:remain===0?'已结清 ✓':'多收 '+fmtMoney(-remain)}</div>
+      </div>`;
+    }).join('')||'<div class="muted">无柜子</div>'}
   `;
 
   // ====== Tab 4: 流程节点（8 阶段） ======
@@ -1758,27 +1748,22 @@ function renderContainerDetail(){
     <div class="detail-row"><div class="k">实际到港</div><div class="v">${fmtDate(ct.actualArrivalDate)}</div></div>
     <div class="detail-row"><div class="k">滞港状态</div><div class="v">${p?`<span class="port-days ${p.c}">${p.label}</span>`:'-'}</div></div>
   `;
-  const totC=(ct.containerCosts||[]).reduce((a,x)=>a+x.amount,0);
-  const totL=(ct.landTransportRecords||[]).reduce((a,x)=>a+Number(x.fee||0),0);
+  const totRecv=canSeeIncome()?Number(ct.receivable||0):null;
+  const totCost=canSeeIncome()?Number(ct.cost||0):null;
+  const totReceived=canSeeIncome()?Number(ct.received||0):null;
+  const profit=canSeeIncome()?(Number(ct.receivable||0)-Number(ct.cost||0)):null;
+  const remain=canSeeIncome()?(Number(ct.receivable||0)-Number(ct.received||0)):null;
   document.getElementById('cd-summary').innerHTML=`
-    <div class="detail-row"><div class="k">按柜成本</div><div class="v">${fmtMoney(totC,'MZN')}</div></div>
-    <div class="detail-row"><div class="k">陆运费</div><div class="v">${fmtMoney(totL,'MZN')}</div></div>
-    <div class="detail-row"><div class="k">本柜总成本</div><div class="v"><strong>${fmtMoney(totC+totL,'MZN')}</strong></div></div>
-    <div class="detail-row"><div class="k">陆运次数</div><div class="v">${(ct.landTransportRecords||[]).length}</div></div>
+    <div class="detail-row"><div class="k">应收款（清关费）</div><div class="v">${canSeeIncome()?fmtMoney(ct.receivable,ct.currencyRecv):mask(ct.receivable)}</div></div>
+    <div class="detail-row"><div class="k">成本（含陆运）</div><div class="v">${canSeeIncome()?fmtMoney(ct.cost,ct.currencyCost):mask(ct.cost)}</div></div>
+    ${isAdmin()?`
+    <div class="detail-row"><div class="k">实收</div><div class="v green">${fmtMoney(ct.received,ct.currencyReceived)} <span class="muted" style="font-size:11px;">${ct.receivedDate?fmtDate(ct.receivedDate):'未收'}</span></div></div>
+    <div class="detail-row"><div class="k">未收</div><div class="v ${remain>0?'red':'muted'}">${fmtMoney(remain)}</div></div>
+    <div class="detail-row"><div class="k">毛利 = 应收 - 成本</div><div class="v ${profit<0?'red':'green'}"><strong>${fmtMoney(profit)}</strong></div></div>
+    `:''}
   `;
-  // 陆运记录
-  document.getElementById('cd-land-records').innerHTML=(ct.landTransportRecords||[]).map(r=>`
-    <div class="land-record">
-      <div class="row1">
-        <strong>${r.plateNo||'-'}</strong>
-        <span class="badge">${r.destination||'-'}</span>
-        <span class="muted">司机：${r.driverName||'-'} ${r.driverPhone||''}</span>
-        <span class="num" style="margin-left:auto;font-weight:600;">${fmtMoney(r.fee,r.currency||'MZN')}</span>
-        <button class="btn sm danger" onclick="removeLandRecord('${s.id}','${ct.id}','${r.id}')">删</button>
-      </div>
-      <div class="row2">${r.scheduledDate?`计划 ${fmtDate(r.scheduledDate)}`:''} ${r.completedDate?`→ 完成 ${fmtDate(r.completedDate)}`:''} ${r.notes?`· ${r.notes}`:''}</div>
-    </div>
-  `).join('')||`<div class="empty">${t('empty_land_records')}</div>`;
+  // v5.0：取消陆运录入 UI（陆运成本已并入每柜 cost）
+  document.getElementById('cd-land-records').innerHTML=`<div class="muted" style="font-size:12px;">v5.0：陆运费用已合并到「成本」字段，无需单独录入</div>`;
   // 押金区段
   renderDepositSection(ct, s);
 }
@@ -1960,62 +1945,6 @@ function saveDeposit(contId){
 }
 
 // ============================================================
-// 陆运录入模态框
-// ============================================================
-function openLandTransportModal(contId){
-  const m=document.getElementById('modal-content');
-  m.innerHTML=`
-    <h3>${t('btn_add_land')}<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
-    <div class="form-row"><div><label>车牌号 *<span class="pt">Matrícula</span></label><input id="lm-plate" placeholder="MOC-AAA-123" /></div>
-      <div><label>司机姓名<span class="pt">Motorista</span></label><input id="lm-driver" /></div></div>
-    <div class="form-row"><div><label>司机电话<span class="pt">Tel</span></label><input id="lm-phone" placeholder="+258 84 xxx xxxx" /></div>
-      <div><label>派送目的地<span class="pt">Destino</span></label><input id="lm-dest" placeholder="客户仓库 / 工地地址" /></div></div>
-    <div class="form-row col3"><div><label>陆运费 *<span class="pt">Taxa</span></label><input id="lm-fee" type="number" /></div>
-      <div><label>计划日期<span class="pt">Data planeada</span></label><input id="lm-sched" type="date" /></div>
-      <div><label>完成日期<span class="pt">Data concluída</span></label><input id="lm-done" type="date" /></div></div>
-    <div class="form-row single"><div><label>备注</label><textarea id="lm-notes" rows="2"></textarea></div></div>
-    <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveLandRecord('${contId}')">${t('btn_save')}</button></div>
-  `;
-  document.getElementById('modal-back').classList.add('show');
-}
-function saveLandRecord(contId){
-  const plate=document.getElementById('lm-plate').value.trim();
-  const fee=Number(document.getElementById('lm-fee').value||0);
-  if(!plate){alert(t('err_plate_required'));return;}
-  if(fee<=0){alert(t('err_landfee_required'));return;}
-  for(const s of data.shipments||[]){
-    const ct=(s.containers||[]).find(c=>c.id===contId);
-    if(ct){
-      if(!ct.landTransportRecords)ct.landTransportRecords=[];
-      ct.landTransportRecords.push({
-        id:uid(),plateNo:plate,
-        driverName:document.getElementById('lm-driver').value.trim(),
-        driverPhone:document.getElementById('lm-phone').value.trim(),
-        destination:document.getElementById('lm-dest').value.trim(),
-        fee, currency:'MZN',
-        scheduledDate:document.getElementById('lm-sched').value,
-        completedDate:document.getElementById('lm-done').value,
-        notes:document.getElementById('lm-notes').value.trim()
-      });
-      // 自动勾选陆运阶段
-      const lm=ct.contMilestones.find(m=>m.stage==='landtransport');
-      if(lm&&document.getElementById('lm-done').value){lm.status='done';lm.actualDate=document.getElementById('lm-done').value;}
-      saveData();
-      closeModal();
-      renderCurrent();
-      return;
-    }
-  }
-}
-function removeLandRecord(shipId,contId,recId){
-  if(!confirm('删除这条陆运记录？'))return;
-  const s=data.shipments.find(x=>x.id===shipId);
-  const ct=s.containers.find(c=>c.id===contId);
-  ct.landTransportRecords=(ct.landTransportRecords||[]).filter(r=>r.id!==recId);
-  saveData();renderCurrent();
-}
-
-// ============================================================
 // 模态框：提单 / 柜 / 客户（精简版）
 // ============================================================
 function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-back').classList.add('show');}
@@ -2031,9 +1960,7 @@ function openShipmentModal(id){
       <div><label>客户 *<span class="pt">Cliente</span></label><select id="sm-cust">${customers.map(c=>`<option value="${c.id}" ${s?.customerId===c.id?'selected':''}>${c.name}</option>`).join('')}</select></div></div>
     <div class="form-row"><div><label>商品描述<span class="pt">Produto</span></label><input id="sm-prod" value="${s?.productDesc||''}" /></div>
       <div><label>HS Code</label><input id="sm-hs" value="${s?.hsCode||''}" /></div></div>
-    <div class="form-row col3"><div><label>货值<span class="pt">Valor</span></label><input id="sm-val" type="number" value="${s?.declaredValue||''}" /></div>
-      <div><label>币种</label><select id="sm-cur"><option ${s?.currency==='USD'?'selected':''}>USD</option><option ${s?.currency==='EUR'?'selected':''}>EUR</option><option ${s?.currency==='MZN'?'selected':''}>MZN</option></select></div>
-      <div><label>默认免费期(天)</label><input id="sm-freedays" type="number" value="${s?.freeDays||21}" /></div></div>
+    <div class="form-row"><div><label>默认免费期(天)</label><input id="sm-freedays" type="number" value="${s?.freeDays||21}" /></div></div>
     <div class="form-row"><div><label>船名<span class="pt">Navio</span></label><input id="sm-vessel" value="${s?.vessel||''}" /></div>
       <div><label>航次<span class="pt">Viagem</span></label><input id="sm-voyage" value="${s?.voyage||''}" /></div></div>
     <div class="form-row"><div><label>起运港<span class="pt">Origem</span></label><input id="sm-origin" value="${s?.originPort||''}" /></div>
@@ -2053,8 +1980,6 @@ function saveShipment(id){
     blNo:bl,customerId:custId,
     productDesc:document.getElementById('sm-prod').value,
     hsCode:document.getElementById('sm-hs').value,
-    declaredValue:Number(document.getElementById('sm-val').value||0),
-    currency:document.getElementById('sm-cur').value,
     freeDays:Number(document.getElementById('sm-freedays').value||21),
     vessel:document.getElementById('sm-vessel').value,
     voyage:document.getElementById('sm-voyage').value,
@@ -2069,10 +1994,8 @@ function saveShipment(id){
     const s=data.shipments.find(x=>x.id===id);
     Object.assign(s,obj);
   }else{
-    const cust=data.customers.find(c=>c.id===custId);
-    const ns=newShip(uid(),obj.blNo,obj.customerId,obj.productDesc,obj.hsCode,obj.declaredValue,obj.vessel,obj.voyage,obj.etd,obj.eta,obj.originPort,obj.destPort,obj.notes,obj.freeDays);
+    const ns=newShip(uid(),obj.blNo,obj.customerId,obj.productDesc,obj.hsCode,obj.vessel,obj.voyage,obj.etd,obj.eta,obj.originPort,obj.destPort,obj.notes,obj.freeDays);
     Object.assign(ns,obj);
-    ns.paymentSchedule=generatePaymentSchedule(cust,ns);
     data.shipments.push(ns);
     currentShipmentId=ns.id;
     id=ns.id;
@@ -2089,6 +2012,14 @@ function openContainerModal(shipId,contId){
   const s=data.shipments.find(x=>x.id===shipId);
   if(!s)return;
   const c=contId?s.containers.find(x=>x.id===contId):null;
+  const adminSection=isAdmin()?`
+    <div class="form-section" style="background:#fef3c7;border-radius:6px;padding:10px 12px;margin-bottom:12px;font-size:11.5px;color:#78350f;">⚠️ 以下字段仅老板可见可编辑</div>
+    <div class="form-row"><div><label>应收款（清关费）*<span class="pt">A receber</span></label><input id="cm-receivable" type="number" value="${c?.receivable||0}" /></div>
+      <div><label>币种</label><select id="cm-cur-recv"><option ${c?.currencyRecv==='MZN'?'selected':''}>MZN</option><option ${c?.currencyRecv==='USD'?'selected':''}>USD</option><option ${c?.currencyRecv==='EUR'?'selected':''}>EUR</option></select></div></div>
+    <div class="form-row"><div><label>实收<span class="pt">Recebido</span></label><input id="cm-received" type="number" value="${c?.received||0}" /></div>
+      <div><label>实收币种</label><select id="cm-cur-received"><option ${c?.currencyReceived==='MZN'?'selected':''}>MZN</option><option ${c?.currencyReceived==='USD'?'selected':''}>USD</option><option ${c?.currencyReceived==='EUR'?'selected':''}>EUR</option></select></div>
+      <div><label>已收日期<span class="pt">Data</span></label><input id="cm-received-date" type="date" value="${c?.receivedDate||''}" /></div></div>
+  `:'';
   const html=`
     <h3>${contId?'编辑':'新建'}柜<span style="cursor:pointer;color:var(--text-muted);" onclick="closeModal()">×</span></h3>
     <div class="form-row col3"><div><label>柜号 *<span class="pt">Nº Contentor</span></label><input id="cm-no" value="${c?.containerNo||''}" /></div>
@@ -2098,6 +2029,9 @@ function openContainerModal(shipId,contId){
       <div><label>体积<span class="pt">Volume</span></label><input id="cm-vol" value="${c?.volume||''}" placeholder="56CBM" /></div></div>
     <div class="form-row"><div><label>实际到港日<span class="pt">Chegada</span></label><input id="cm-arr" type="date" value="${c?.actualArrivalDate||''}" /></div>
       <div><label>提货日<span class="pt">Levant.</span></label><input id="cm-pickup" type="date" value="${c?.pickupDate||''}" /></div></div>
+    <div class="form-row"><div><label>成本（含陆运）*<span class="pt">Custo</span></label><input id="cm-cost" type="number" value="${c?.cost||0}" /></div>
+      <div><label>成本币种</label><select id="cm-cur-cost"><option ${c?.currencyCost==='MZN'?'selected':''}>MZN</option><option ${c?.currencyCost==='USD'?'selected':''}>USD</option><option ${c?.currencyCost==='EUR'?'selected':''}>EUR</option></select></div></div>
+    ${adminSection}
     <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveContainer('${shipId}','${contId||''}')">${t('btn_save')}</button></div>
   `;
   openModal(html);
@@ -2113,8 +2047,18 @@ function saveContainer(shipId,contId){
     weight:document.getElementById('cm-weight').value,
     volume:document.getElementById('cm-vol').value,
     actualArrivalDate:document.getElementById('cm-arr').value,
-    pickupDate:document.getElementById('cm-pickup').value
+    pickupDate:document.getElementById('cm-pickup').value,
+    cost:Number(document.getElementById('cm-cost').value||0),
+    currencyCost:document.getElementById('cm-cur-cost').value
   };
+  // 老板专属字段：仅 admin 可写入
+  if(isAdmin()){
+    obj.receivable=Number(document.getElementById('cm-receivable').value||0);
+    obj.currencyRecv=document.getElementById('cm-cur-recv').value;
+    obj.received=Number(document.getElementById('cm-received').value||0);
+    obj.currencyReceived=document.getElementById('cm-cur-received').value;
+    obj.receivedDate=document.getElementById('cm-received-date').value;
+  }
   if(contId){
     const c=s.containers.find(x=>x.id===contId);
     Object.assign(c,obj);
@@ -2135,13 +2079,7 @@ function openCustomerModal(id){
     <div class="form-row"><div><label>主营</label><input id="cm-biz" value="${c?.business||''}" /></div>
       <div><label>微信</label><input id="cm-wx" value="${c?.wechat||''}" /></div></div>
     <div class="form-row"><div><label>电话</label><input id="cm-phone" value="${c?.phone||''}" /></div>
-      <div><label>付款条款</label><select id="cm-terms">
-      <option value="prepay" ${c?.paymentTerms?.type==='prepay'?'selected':''}>${t('pt_prepay')}</option>
-      <option value="split50" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===50?'selected':''}>${t('pt_split_50')}</option>
-      <option value="split30" ${c?.paymentTerms?.type==='split'&&c?.paymentTerms?.prepayPct===30?'selected':''}>${t('pt_split_30')}</option>
-      <option value="credit30" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===30?'selected':''}>${t('pt_credit_30')}</option>
-      <option value="credit60" ${c?.paymentTerms?.type==='credit'&&c?.paymentTerms?.creditDays===60?'selected':''}>${t('pt_credit_60')}</option>
-    </select></div></div>
+      <div><label>地址</label><input id="cm-addr" value="${c?.address||''}" /></div></div>
     <div class="form-row single"><div><label>备注</label><textarea id="cm-notes" rows="2">${c?.notes||''}</textarea></div></div>
     <div class="actions"><button class="btn" onclick="closeModal()">${t('btn_cancel')}</button><button class="btn primary" onclick="saveCustomer('${id||''}')">${t('btn_save')}</button></div>
   `;
@@ -2150,13 +2088,11 @@ function openCustomerModal(id){
 function saveCustomer(id){
   const name=document.getElementById('cm-name').value.trim();
   if(!name){alert(t('err_cust_required'));return;}
-  const termsVal=document.getElementById('cm-terms').value;
-  const termsMap={prepay:{type:'prepay'},split50:{type:'split',prepayPct:50},split30:{type:'split',prepayPct:30},credit30:{type:'credit',creditDays:30},credit60:{type:'credit',creditDays:60}};
   const obj={
     name,namePt:document.getElementById('cm-namept').value,
     business:document.getElementById('cm-biz').value,
     wechat:document.getElementById('cm-wx').value,phone:document.getElementById('cm-phone').value,
-    paymentTerms:termsMap[termsVal],
+    address:document.getElementById('cm-addr').value,
     notes:document.getElementById('cm-notes').value
   };
   if(id){
@@ -2201,52 +2137,7 @@ function updateDocStatus(shipId,docType,status){
   if(status==='received'&&!d.receivedDate)d.receivedDate=nowISO().slice(0,10);
   saveData();renderCurrent();
 }
-function markPaid(shipId,idx){
-  const s=data.shipments.find(x=>x.id===shipId);
-  const p=s.paymentSchedule[idx];
-  const amt=prompt(`确认收款金额（${p.name}）`,p.amount);
-  if(!amt)return;
-  p.paid=true;p.paidAmount=Number(amt);p.paidDate=nowISO().slice(0,10);
-  saveData();renderCurrent();
-}
-function addPaymentNode(shipId){
-  const name=prompt('应收节点名（如 尾款 / 加急费）');
-  if(!name)return;
-  const amt=Number(prompt('金额（USD）','0'));
-  const due=prompt('到期日 YYYY-MM-DD',nowISO().slice(0,10));
-  const s=data.shipments.find(x=>x.id===shipId);
-  s.paymentSchedule.push({name,pt:'',pct:0,amount:amt,dueDate:due||'',paid:false,paidDate:'',paidAmount:0,notes:''});
-  saveData();renderCurrent();
-}
-function addSharedCost(shipId){
-  const type=document.getElementById('new-sc-type').value;
-  const amount=Number(document.getElementById('new-sc-amt').value||0);
-  const notes=document.getElementById('new-sc-notes').value;
-  if(!amount){alert(t('err_amount_required'));return;}
-  const s=data.shipments.find(x=>x.id===shipId);
-  s.sharedCosts.push({type,amount,currency:'MZN',notes});
-  saveData();renderCurrent();
-}
-function removeSharedCost(shipId,idx){
-  if(!confirm('删除这条成本？'))return;
-  const s=data.shipments.find(x=>x.id===shipId);
-  s.sharedCosts.splice(idx,1);saveData();renderCurrent();
-}
-function addContCost(shipId,contId){
-  const type=document.getElementById('cc-type-'+contId).value;
-  const amount=Number(document.getElementById('cc-amt-'+contId).value||0);
-  if(!amount){alert(t('err_amount_required'));return;}
-  const s=data.shipments.find(x=>x.id===shipId);
-  const c=s.containers.find(x=>x.id===contId);
-  c.containerCosts.push({type,amount,currency:'MZN',notes:''});
-  saveData();renderCurrent();
-}
-function removeContCost(shipId,contId,idx){
-  if(!confirm('删除？'))return;
-  const s=data.shipments.find(x=>x.id===shipId);
-  const c=s.containers.find(x=>x.id===contId);
-  c.containerCosts.splice(idx,1);saveData();renderCurrent();
-}
+// v5.0：markPaid / addPaymentNode / addSharedCost / removeSharedCost / addContCost / removeContCost 已删除（应收/实收/成本改为每柜直接编辑）
 function addComm(shipId){
   const v=document.getElementById('comm-content').value.trim();
   if(!v)return;
@@ -2302,12 +2193,12 @@ function exportShipmentsCSV(){
   downloadCSV(rows,'提单');
 }
 function exportContainersCSV(){
-  const rows=[['柜号','箱型','提单','客户','状态','在港','提货','陆运次数']];
+  const rows=[['柜号','箱型','提单','客户','状态','在港','提货','应收','成本','实收']];
   data.shipments.forEach(s=>{(s.containers||[]).forEach(c=>{
     const cu=data.customers.find(x=>x.id===s.customerId);
     const p=portDaysClass(c);
     const landM=c.contMilestones?.find(y=>y.stage==='pickup');
-    rows.push([c.containerNo,c.boxType,s.blNo,cu?.name||'',t('st_'+shipmentStatus(s)),p?.label||'',landM?.actualDate||'',(c.landTransportRecords||[]).length]);
+    rows.push([c.containerNo,c.boxType,s.blNo,cu?.name||'',t('st_'+shipmentStatus(s)),p?.label||'',landM?.actualDate||'',c.receivable||0,c.cost||0,c.received||0]);
   });});
   downloadCSV(rows,'柜');
 }
